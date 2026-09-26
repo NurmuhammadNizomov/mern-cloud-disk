@@ -207,7 +207,7 @@ export const DrivePage: React.FC = () => {
 
         {/* Action buttons (New Folder & Upload Files) */}
         {activeSection === 'my-drive' && (
-          <div className="is-flex is-align-items-center" style={{ gap: '8px' }}>
+          <div className="is-flex is-align-items-center drive-top-actions" style={{ gap: '8px' }}>
             <button
               type="button"
               className="button is-small is-light"

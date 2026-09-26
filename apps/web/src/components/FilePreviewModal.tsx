@@ -53,7 +53,7 @@ export const FilePreviewModal: React.FC = () => {
               style={{ borderRadius: '8px', gap: '6px' }}
             >
               <Download size={14} />
-              <span>{t.download}</span>
+              <span className="is-hidden-mobile">{t.download}</span>
             </a>
             <button
               type="button"
@@ -64,7 +64,7 @@ export const FilePreviewModal: React.FC = () => {
               style={{ borderRadius: '8px', gap: '6px' }}
             >
               <Share2 size={14} />
-              <span>{t.share}</span>
+              <span className="is-hidden-mobile">{t.share}</span>
             </button>
             <button type="button" className="delete" aria-label="close" onClick={() => setPreviewFile(null)} />
           </div>

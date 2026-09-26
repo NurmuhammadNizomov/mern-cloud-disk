@@ -86,7 +86,7 @@ export const FilterSortBar: React.FC = () => {
           style={{ borderRadius: '8px', gap: '4px', fontWeight: 500 }}
         >
           <ArrowUpDown size={13} style={{ color: sortOrder === 'asc' ? 'var(--primary)' : 'var(--text-main)' }} />
-          <span className="is-size-7">{sortOrder === 'asc' ? t.ascending : t.descending}</span>
+          <span className="is-size-7 is-hidden-mobile">{sortOrder === 'asc' ? t.ascending : t.descending}</span>
         </button>
       </div>
     </div>
