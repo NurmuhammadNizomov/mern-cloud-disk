@@ -41,6 +41,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
   const { t } = useSettingsStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(file._id);
@@ -57,6 +58,20 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
+
+  const handleDragStart = (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    e.dataTransfer.setData(
+      'application/x-disk-item',
+      JSON.stringify({ type: 'file', id: file._id, name: file.name })
+    );
+    e.dataTransfer.effectAllowed = 'move';
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
 
   const formatFileSize = (bytes: number): string => {
     if (!bytes) return '';
@@ -85,12 +100,16 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
   return (
     <div
       ref={cardRef}
-      className={`drive-card mb-4 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''} ${isDeleting ? 'is-deleting' : ''}`}
+      draggable={!isTrash && !isDeleting}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      className={`drive-card mb-4 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''} ${isDeleting ? 'is-deleting' : ''} ${isDragging ? 'is-dragging' : ''}`}
       onClick={() => !isTrash && !isDeleting && setPreviewFile(file)}
       style={{
         overflow: menuOpen ? 'visible' : 'hidden',
         zIndex: menuOpen ? 1000 : undefined,
-        position: 'relative'
+        position: 'relative',
+        cursor: isTrash || isDeleting ? 'default' : isDragging ? 'grabbing' : 'grab'
       }}
     >
       {/* Loading Overlay when Deleting or Restoring */}

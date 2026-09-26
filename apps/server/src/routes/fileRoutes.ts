@@ -6,12 +6,13 @@ import {
   toggleStarFile,
   trashFile,
   restoreFile,
-  deleteFilePermanently
+  deleteFilePermanently,
+  moveFile
 } from '../controllers/fileController';
 import { requireAuth } from '../middleware/auth';
 import { uploadMulter } from '../middleware/upload';
 import { validateBody } from '../middleware/validate';
-import { renameFileSchema } from '../validations/fileValidation';
+import { renameFileSchema, moveFileSchema } from '../validations/fileValidation';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use(requireAuth);
 router.post('/upload', uploadMulter.array('files', 20), uploadFiles);
 router.get('/', getFiles);
 router.patch('/:id/rename', validateBody(renameFileSchema), renameFile);
+router.patch('/:id/move', validateBody(moveFileSchema), moveFile);
 router.patch('/:id/star', toggleStarFile);
 router.patch('/:id/trash', trashFile);
 router.patch('/:id/restore', restoreFile);

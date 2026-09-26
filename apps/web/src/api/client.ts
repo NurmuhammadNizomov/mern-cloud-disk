@@ -109,6 +109,10 @@ export const folderApi = {
   deletePermanently: async (id: string) => {
     const res = await api.delete(`/folders/${id}`);
     return res.data.data;
+  },
+  move: async (id: string, targetFolderId?: string | null) => {
+    const res = await api.patch(`/folders/${id}/move`, { targetFolderId });
+    return res.data.data;
   }
 };
 
@@ -170,6 +174,10 @@ export const fileApi = {
   },
   deletePermanently: async (id: string) => {
     const res = await api.delete(`/files/${id}`);
+    return res.data.data;
+  },
+  move: async (id: string, targetFolderId?: string | null) => {
+    const res = await api.patch(`/files/${id}/move`, { targetFolderId });
     return res.data.data;
   }
 };

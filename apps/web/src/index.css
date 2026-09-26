@@ -1082,3 +1082,124 @@ tr.table-row-selected td {
   opacity: 0.55 !important;
   pointer-events: none !important;
 }
+
+/* ==========================================================================
+   Internal Drag & Drop Visual States
+   ========================================================================== */
+.is-dragging {
+  opacity: 0.45 !important;
+  transform: scale(0.98);
+  cursor: grabbing !important;
+}
+
+.drop-target-active {
+  border: 2px dashed var(--primary) !important;
+  background-color: var(--primary-light, rgba(37, 99, 235, 0.08)) !important;
+  transform: scale(1.02);
+  transition: all 0.15s ease;
+  box-shadow: 0 0 0 4px var(--primary-ring) !important;
+}
+
+tr.drop-target-active {
+  background-color: var(--primary-light, rgba(37, 99, 235, 0.08)) !important;
+  outline: 2px dashed var(--primary) !important;
+}
+
+/* ==========================================================================
+   Toast Notification System (Google / Linear / Vercel style)
+   ========================================================================== */
+.toaster-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 380px;
+  width: calc(100vw - 32px);
+}
+
+.toast-item {
+  pointer-events: auto;
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: toast-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.toast-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 2px;
+  line-height: 1.25;
+}
+
+.toast-message {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.toast-close-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+}
+
+@media screen and (max-width: 768px) {
+  .toaster-container {
+    top: 14px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+  }
+}

@@ -62,3 +62,10 @@ export const deleteFolderPermanently = async (req: AuthRequest, res: Response): 
   await FolderService.deletePermanently(req.user!.id, id);
   sendSuccess(res, StatusCodes.OK, 'Folder deleted permanently');
 };
+
+export const moveFolder = async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { targetFolderId } = req.body;
+  const folder = await FolderService.move(req.user!.id, id, targetFolderId);
+  sendSuccess(res, StatusCodes.OK, 'Folder moved successfully', { folder });
+};

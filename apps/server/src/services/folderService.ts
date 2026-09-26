@@ -153,4 +153,49 @@ export class FolderService {
     }
     return true;
   }
+
+  static async move(userId: string, folderId: string, targetFolderId?: string | null) {
+    if (!folderId || !mongoose.Types.ObjectId.isValid(folderId)) {
+      throw new AppError('Invalid folder ID', StatusCodes.BAD_REQUEST);
+    }
+
+    const folderToMove = await Folder.findOne({ _id: folderId, owner: userId, isTrash: false });
+    if (!folderToMove) {
+      throw new AppError('Folder not found or access denied', StatusCodes.NOT_FOUND);
+    }
+
+    let validParentId: mongoose.Types.ObjectId | null = null;
+
+    if (targetFolderId && targetFolderId !== 'null' && targetFolderId !== 'root') {
+      if (!mongoose.Types.ObjectId.isValid(targetFolderId)) {
+        throw new AppError('Invalid target folder ID', StatusCodes.BAD_REQUEST);
+      }
+
+      if (folderId === targetFolderId) {
+        throw new AppError('Cannot move a folder into itself', StatusCodes.BAD_REQUEST);
+      }
+
+      const targetFolder = await Folder.findOne({ _id: targetFolderId, owner: userId, isTrash: false });
+      if (!targetFolder) {
+        throw new AppError('Target folder not found or access denied', StatusCodes.NOT_FOUND);
+      }
+
+      // Check cycle: prevent moving into any subfolder / descendant
+      let checkId: any = targetFolder.parentFolder;
+      while (checkId) {
+        if (checkId.toString() === folderId) {
+          throw new AppError('Cannot move a folder into one of its subfolders', StatusCodes.BAD_REQUEST);
+        }
+        const ancestor: any = await Folder.findOne({ _id: checkId, owner: userId }).select('parentFolder');
+        checkId = ancestor?.parentFolder || null;
+      }
+
+      validParentId = targetFolder._id as mongoose.Types.ObjectId;
+    }
+
+    folderToMove.parentFolder = validParentId;
+    await folderToMove.save();
+
+    return folderToMove;
+  }
 }

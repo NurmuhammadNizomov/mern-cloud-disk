@@ -41,6 +41,7 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
   const { t } = useSettingsStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const rowRef = useRef<HTMLTableRowElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(file._id);
@@ -57,6 +58,20 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
+
+  const handleDragStart = (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    e.dataTransfer.setData(
+      'application/x-disk-item',
+      JSON.stringify({ type: 'file', id: file._id, name: file.name })
+    );
+    e.dataTransfer.effectAllowed = 'move';
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
 
   const formatFileSize = (bytes: number): string => {
     if (!bytes) return '';
@@ -85,9 +100,12 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
   return (
     <tr
       ref={rowRef}
-      style={{ cursor: isDeleting ? 'default' : 'pointer' }}
+      draggable={!isTrash && !isDeleting}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      style={{ cursor: isDeleting ? 'default' : isDragging ? 'grabbing' : 'pointer' }}
       onClick={() => !isTrash && !isDeleting && setPreviewFile(file)}
-      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''} ${isDeleting ? 'row-loading-state' : ''}`}
+      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''} ${isDeleting ? 'row-loading-state' : ''} ${isDragging ? 'is-dragging' : ''}`}
     >
       {/* Checkbox ("galochka") column */}
       <td style={{ width: '40px', verticalAlign: 'middle' }}>

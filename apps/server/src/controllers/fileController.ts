@@ -60,3 +60,10 @@ export const deleteFilePermanently = async (req: AuthRequest, res: Response): Pr
   await FileService.deletePermanently(req.user!.id, id);
   sendSuccess(res, StatusCodes.OK, 'File deleted permanently');
 };
+
+export const moveFile = async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { targetFolderId } = req.body;
+  const file = await FileService.move(req.user!.id, id, targetFolderId);
+  sendSuccess(res, StatusCodes.OK, 'File moved successfully', { file });
+};

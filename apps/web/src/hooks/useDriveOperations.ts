@@ -2,11 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { folderApi, fileApi, shareApi } from '../api/client';
 import { useDriveStore } from '../store/useDriveStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useSettingsStore } from '../store/useSettingsStore';
+import { toast } from '../store/useToastStore';
 import { Folder, FileItem, BreadcrumbItem, UploadItem } from '../types';
 
 export const useDriveOperations = () => {
   const queryClient = useQueryClient();
   const { user, fetchMe } = useAuthStore();
+  const { t } = useSettingsStore();
   const {
     currentFolderId,
     activeSection,
@@ -139,9 +142,11 @@ export const useDriveOperations = () => {
       );
 
       invalidateDriveData();
+      toast.success(`${filesToUpload.length} ${t.uploadSuccess}`);
     } catch (err: any) {
       console.error('Upload failed:', err);
       const errMsg = err?.response?.data?.message || err?.message || 'Upload error occurred';
+      toast.error(errMsg);
       setUploadQueue((prev) =>
         prev.map((item) => {
           if (newItems.some((ni) => ni.id === item.id)) {
@@ -159,52 +164,140 @@ export const useDriveOperations = () => {
   const createFolderMutation = useMutation({
     mutationFn: ({ name, color }: { name: string; color?: string }) =>
       folderApi.create(name, activeSection === 'my-drive' ? currentFolderId : null, color),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(t.folderCreated);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const renameFolderMutation = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => folderApi.rename(id, name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(t.itemRenamed);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const renameFileMutation = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => fileApi.rename(id, name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['files'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
+      toast.success(t.itemRenamed);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
+  });
+
+  const moveFolderMutation = useMutation({
+    mutationFn: ({ id, targetFolderId }: { id: string; targetFolderId?: string | null }) =>
+      folderApi.move(id, targetFolderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['breadcrumbs'] });
+      toast.success(t.itemMoved);
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || t.moveError;
+      toast.error(msg);
+    }
+  });
+
+  const moveFileMutation = useMutation({
+    mutationFn: ({ id, targetFolderId }: { id: string; targetFolderId?: string | null }) =>
+      fileApi.move(id, targetFolderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(t.itemMoved);
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || t.moveError;
+      toast.error(msg);
+    }
   });
 
   const toggleStarFolderMutation = useMutation({
     mutationFn: (id: string) => folderApi.toggleStar(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] })
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(data?.folder?.isStarred ? t.itemStarred : t.itemUnstarred);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const toggleStarFileMutation = useMutation({
     mutationFn: (id: string) => fileApi.toggleStar(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['files'] })
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
+      toast.success(data?.file?.isStarred ? t.itemStarred : t.itemUnstarred);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const trashFolderMutation = useMutation({
     mutationFn: (id: string) => folderApi.trash(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(t.itemTrashed);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const trashFileMutation = useMutation({
     mutationFn: (id: string) => fileApi.trash(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['files'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
+      toast.success(t.itemTrashed);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const restoreFolderMutation = useMutation({
     mutationFn: (id: string) => folderApi.restore(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(t.itemRestored);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const restoreFileMutation = useMutation({
     mutationFn: (id: string) => fileApi.restore(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['files'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
+      toast.success(t.itemRestored);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const deleteFolderPermanentlyMutation = useMutation({
     mutationFn: (id: string) => folderApi.deletePermanently(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      toast.success(t.itemDeleted);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
+    }
   });
 
   const deleteFilePermanentlyMutation = useMutation({
@@ -212,6 +305,10 @@ export const useDriveOperations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['files'] });
       fetchMe();
+      toast.success(t.itemDeleted);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || t.operationFailed);
     }
   });
 
@@ -226,6 +323,10 @@ export const useDriveOperations = () => {
     createFolder: (name: string, color?: string) => createFolderMutation.mutateAsync({ name, color }),
     renameFolder: (id: string, name: string) => renameFolderMutation.mutateAsync({ id, name }),
     renameFile: (id: string, name: string) => renameFileMutation.mutateAsync({ id, name }),
+    moveFolder: (id: string, targetFolderId?: string | null) =>
+      moveFolderMutation.mutateAsync({ id, targetFolderId }),
+    moveFile: (id: string, targetFolderId?: string | null) =>
+      moveFileMutation.mutateAsync({ id, targetFolderId }),
     toggleStarFolder: (id: string) => toggleStarFolderMutation.mutateAsync(id),
     toggleStarFile: (id: string) => toggleStarFileMutation.mutateAsync(id),
     trashFolder: async (id: string) => {

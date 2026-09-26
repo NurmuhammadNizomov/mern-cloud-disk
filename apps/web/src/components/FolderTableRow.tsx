@@ -35,11 +35,15 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
     toggleStarFolder,
     trashFolder,
     restoreFolder,
-    deleteFolderPermanently
+    deleteFolderPermanently,
+    moveFile,
+    moveFolder
   } = useDriveOperations();
   const { t } = useSettingsStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDropTarget, setIsDropTarget] = useState(false);
   const rowRef = useRef<HTMLTableRowElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(folder._id);
@@ -56,6 +60,56 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
+  const handleDragStart = (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    e.dataTransfer.setData(
+      'application/x-disk-item',
+      JSON.stringify({ type: 'folder', id: folder._id, name: folder.name })
+    );
+    e.dataTransfer.effectAllowed = 'move';
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    if (e.dataTransfer.types.includes('application/x-disk-item')) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
+      if (!isDropTarget) setIsDropTarget(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropTarget(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropTarget(false);
+    const raw = e.dataTransfer.getData('application/x-disk-item');
+    if (!raw) return;
+    try {
+      const item = JSON.parse(raw);
+      if (item.id === folder._id) return;
+      if (item.type === 'file') {
+        await moveFile(item.id, folder._id);
+      } else if (item.type === 'folder') {
+        await moveFolder(item.id, folder._id);
+      }
+    } catch (err) {
+      console.error('Folder row drop error:', err);
+    }
+  };
+
   const handleOpenFolder = () => {
     if (!isTrash) {
       setCurrentFolderId(folder._id);
@@ -68,10 +122,16 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
   return (
     <tr
       ref={rowRef}
-      style={{ cursor: isDeleting ? 'default' : 'pointer' }}
+      draggable={!isTrash && !isDeleting}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      style={{ cursor: isDeleting ? 'default' : isDragging ? 'grabbing' : 'pointer' }}
       onClick={isDeleting ? undefined : handleOpenFolder}
       onDoubleClick={isDeleting ? undefined : handleOpenFolder}
-      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''} ${isDeleting ? 'row-loading-state' : ''}`}
+      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''} ${isDeleting ? 'row-loading-state' : ''} ${isDragging ? 'is-dragging' : ''} ${isDropTarget ? 'drop-target-active' : ''}`}
     >
       {/* Checkbox column */}
       <td style={{ width: '40px', verticalAlign: 'middle' }}>

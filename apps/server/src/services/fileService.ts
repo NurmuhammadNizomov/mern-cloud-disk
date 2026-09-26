@@ -215,4 +215,31 @@ export class FileService {
     await File.findByIdAndDelete(fileId);
     return true;
   }
+
+  static async move(userId: string, fileId: string, targetFolderId?: string | null) {
+    let parentFolderId: mongoose.Types.ObjectId | null = null;
+
+    if (targetFolderId && targetFolderId !== 'null' && targetFolderId !== 'root') {
+      if (!mongoose.Types.ObjectId.isValid(targetFolderId)) {
+        throw new AppError('Invalid target folder ID', StatusCodes.BAD_REQUEST);
+      }
+      const targetFolder = await Folder.findOne({ _id: targetFolderId, owner: userId, isTrash: false });
+      if (!targetFolder) {
+        throw new AppError('Target folder not found or access denied', StatusCodes.NOT_FOUND);
+      }
+      parentFolderId = targetFolder._id as mongoose.Types.ObjectId;
+    }
+
+    const file = await File.findOneAndUpdate(
+      { _id: fileId, owner: userId },
+      { folder: parentFolderId },
+      { new: true }
+    );
+
+    if (!file) {
+      throw new AppError('File not found or access denied', StatusCodes.NOT_FOUND);
+    }
+
+    return file;
+  }
 }

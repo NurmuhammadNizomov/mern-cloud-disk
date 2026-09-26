@@ -12,6 +12,7 @@ import { CreateFolderModal } from './components/CreateFolderModal';
 import { ShareModal } from './components/ShareModal';
 import { RenameModal } from './components/RenameModal';
 import { FilePreviewModal } from './components/FilePreviewModal';
+import { Toaster } from './components/Toaster';
 
 export const App: React.FC = () => {
   const { user, loading, fetchMe } = useAuthStore();
@@ -26,7 +27,12 @@ export const App: React.FC = () => {
   if (pathname.startsWith('/share/')) {
     const token = pathname.replace('/share/', '').trim();
     if (token) {
-      return <PublicSharePage token={token} />;
+      return (
+        <>
+          <PublicSharePage token={token} />
+          <Toaster />
+        </>
+      );
     }
   }
 
@@ -44,15 +50,23 @@ export const App: React.FC = () => {
   }
 
   if (!user) {
-    return authMode === 'login' ? (
-      <LoginPage onSwitchToRegister={() => setAuthMode('register')} />
-    ) : (
-      <RegisterPage onSwitchToLogin={() => setAuthMode('login')} />
+    return (
+      <>
+        {authMode === 'login' ? (
+          <LoginPage onSwitchToRegister={() => setAuthMode('register')} />
+        ) : (
+          <RegisterPage onSwitchToLogin={() => setAuthMode('login')} />
+        )}
+        <Toaster />
+      </>
     );
   }
 
   return (
     <div className="app-container">
+      {/* Global Toast Notifications */}
+      <Toaster />
+
       {/* Full-screen Drag & Drop Dropzone */}
       <DropzoneOverlay />
 

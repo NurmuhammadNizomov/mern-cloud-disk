@@ -11,6 +11,7 @@ import {
 import { useDriveStore } from '../store/useDriveStore';
 import { shareApi } from '../api/client';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { toast } from '../store/useToastStore';
 
 export const ShareModal: React.FC = () => {
   const { shareModalItem, setShareModalItem } = useDriveStore();
@@ -38,8 +39,10 @@ export const ShareModal: React.FC = () => {
       (item as any).sharedWith = res.sharedWith;
       setShareModalItem({ type, item: { ...item } });
       setEmail('');
-    } catch (err) {
+      toast.success('Access granted');
+    } catch (err: any) {
       console.error('Share error:', err);
+      toast.error(err?.response?.data?.message || t.operationFailed);
     } finally {
       setSubmitting(false);
     }
@@ -50,8 +53,10 @@ export const ShareModal: React.FC = () => {
       const res = await shareApi.removeShare(type, item._id, targetEmail);
       (item as any).sharedWith = res.sharedWith;
       setShareModalItem({ type, item: { ...item } });
-    } catch (err) {
+      toast.info('Access removed');
+    } catch (err: any) {
       console.error('Remove share error:', err);
+      toast.error(err?.response?.data?.message || t.operationFailed);
     }
   };
 
@@ -63,8 +68,10 @@ export const ShareModal: React.FC = () => {
       (item as any).isPublic = res.isPublic;
       (item as any).shareToken = res.shareToken;
       setShareModalItem({ type, item: { ...item } });
-    } catch (err) {
+      toast.success(res.isPublic ? 'Public sharing enabled' : 'Public sharing disabled');
+    } catch (err: any) {
       console.error('Toggle public link error:', err);
+      toast.error(err?.response?.data?.message || t.operationFailed);
     } finally {
       setPublicLoading(false);
     }
@@ -78,6 +85,7 @@ export const ShareModal: React.FC = () => {
     if (!publicLink) return;
     navigator.clipboard.writeText(publicLink);
     setCopied(true);
+    toast.success(t.linkCopied);
     setTimeout(() => setCopied(false), 2500);
   };
 

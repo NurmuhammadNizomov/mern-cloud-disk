@@ -12,18 +12,24 @@ export const DropzoneOverlay: React.FC = () => {
   useEffect(() => {
     let dragCounter = 0;
 
+    const isExternalFileDrag = (e: DragEvent): boolean => {
+      const types = Array.from(e.dataTransfer?.types || []);
+      return types.includes('Files') && !types.includes('application/x-disk-item');
+    };
+
     const handleDragEnter = (e: DragEvent) => {
       e.preventDefault();
+      if (!isExternalFileDrag(e)) return;
       dragCounter++;
-      if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
-        setIsDraggingOver(true);
-      }
+      setIsDraggingOver(true);
     };
 
     const handleDragLeave = (e: DragEvent) => {
       e.preventDefault();
+      if (!isExternalFileDrag(e)) return;
       dragCounter--;
-      if (dragCounter === 0) {
+      if (dragCounter <= 0) {
+        dragCounter = 0;
         setIsDraggingOver(false);
       }
     };
@@ -34,10 +40,11 @@ export const DropzoneOverlay: React.FC = () => {
 
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
+      const wasExternal = isExternalFileDrag(e);
       dragCounter = 0;
       setIsDraggingOver(false);
 
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      if (wasExternal && e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
         uploadFiles(e.dataTransfer.files);
       }
     };

@@ -34,11 +34,15 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
     toggleStarFolder,
     trashFolder,
     restoreFolder,
-    deleteFolderPermanently
+    deleteFolderPermanently,
+    moveFile,
+    moveFolder
   } = useDriveOperations();
   const { t } = useSettingsStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDropTarget, setIsDropTarget] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(folder._id);
@@ -55,6 +59,56 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
+  const handleDragStart = (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    e.dataTransfer.setData(
+      'application/x-disk-item',
+      JSON.stringify({ type: 'folder', id: folder._id, name: folder.name })
+    );
+    e.dataTransfer.effectAllowed = 'move';
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    if (e.dataTransfer.types.includes('application/x-disk-item')) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
+      if (!isDropTarget) setIsDropTarget(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropTarget(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    if (isTrash || isDeleting) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropTarget(false);
+    const raw = e.dataTransfer.getData('application/x-disk-item');
+    if (!raw) return;
+    try {
+      const item = JSON.parse(raw);
+      if (item.id === folder._id) return;
+      if (item.type === 'file') {
+        await moveFile(item.id, folder._id);
+      } else if (item.type === 'folder') {
+        await moveFolder(item.id, folder._id);
+      }
+    } catch (err) {
+      console.error('Folder drop error:', err);
+    }
+  };
+
   const handleOpenFolder = () => {
     if (!isTrash) {
       setCurrentFolderId(folder._id);
@@ -67,12 +121,19 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
   return (
     <div
       ref={cardRef}
-      className={`drive-card folder-card mb-3 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''} ${isDeleting ? 'is-deleting' : ''}`}
+      draggable={!isTrash && !isDeleting}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`drive-card folder-card mb-3 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''} ${isDeleting ? 'is-deleting' : ''} ${isDragging ? 'is-dragging' : ''} ${isDropTarget ? 'drop-target-active' : ''}`}
       onClick={isDeleting ? undefined : handleOpenFolder}
       onDoubleClick={isDeleting ? undefined : handleOpenFolder}
       style={{
         zIndex: menuOpen ? 1000 : undefined,
-        position: 'relative'
+        position: 'relative',
+        cursor: isTrash || isDeleting ? 'default' : isDragging ? 'grabbing' : 'pointer'
       }}
     >
       {/* Loading Overlay when Deleting or Restoring */}
