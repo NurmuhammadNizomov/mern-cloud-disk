@@ -118,7 +118,7 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
       </td>
 
       {/* Date */}
-      <td style={{ verticalAlign: 'middle', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+      <td className="hide-mobile" style={{ verticalAlign: 'middle', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
         {fmtDate(folder.createdAt)}
       </td>
 

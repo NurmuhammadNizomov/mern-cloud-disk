@@ -77,7 +77,7 @@ export const CreateFolderModal: React.FC = () => {
 
             <div className="field mb-2">
               <label className="label">{t.folderColorLabel}</label>
-              <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
+              <div className="is-flex is-align-items-center is-flex-wrap-wrap" style={{ gap: '10px' }}>
                 {FOLDER_COLORS.map((color) => (
                   <div
                     key={color}

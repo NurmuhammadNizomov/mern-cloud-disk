@@ -41,7 +41,7 @@ export const FilterSortBar: React.FC = () => {
     <div className="is-flex is-justify-content-space-between is-align-items-center mb-4 is-flex-wrap-wrap" style={{ gap: '12px' }}>
       {/* Category Pills */}
       {activeSection === 'my-drive' && (
-        <div className="is-flex is-align-items-center is-flex-wrap-wrap" style={{ gap: '8px' }}>
+        <div className="category-pills-container is-flex is-align-items-center" style={{ gap: '8px' }}>
           {categories.map((cat) => {
             const isActive = filterCategory === cat.id;
             return (

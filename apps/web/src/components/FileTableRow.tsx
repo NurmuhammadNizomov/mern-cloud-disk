@@ -134,7 +134,7 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
       </td>
 
       {/* Date */}
-      <td style={{ verticalAlign: 'middle', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+      <td className="hide-mobile" style={{ verticalAlign: 'middle', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
         {fmtDate(file.createdAt)}
       </td>
 

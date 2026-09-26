@@ -826,3 +826,200 @@ tr.table-row-selected td {
     transform: translate(-50%, 0);
   }
 }
+
+/* ==========================================================================
+   Mobile Responsiveness (Drawer sidebar, compact header, swipable pills)
+   ========================================================================== */
+
+.mobile-menu-toggle-btn {
+  display: none !important;
+}
+
+.mobile-sidebar-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Mobile Hamburger */
+  .mobile-menu-toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Mobile Sidebar Drawer */
+  .mobile-sidebar-header {
+    display: flex;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .main-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px !important;
+    max-width: 85vw !important;
+    z-index: 9999 !important;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: none;
+  }
+
+  .main-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* Mobile Header */
+  .main-header {
+    padding: 0 12px !important;
+    gap: 8px;
+  }
+
+  .header-brand-wrapper {
+    min-width: unset !important;
+  }
+
+  .header-search-wrapper {
+    margin: 0 6px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .header-search-input {
+    height: 36px !important;
+    font-size: 0.8rem !important;
+    padding: 0 28px 0 34px !important;
+  }
+
+  /* Mobile Main Body */
+  .main-body {
+    padding: 16px 12px 90px 12px !important;
+  }
+
+  /* Category Filter Pills (Swipable) */
+  .category-pills-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    scrollbar-width: none;
+  }
+
+  .category-pills-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Responsive Table */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .table-responsive-container {
+    border-radius: 12px !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table td, .table th {
+    padding: 10px 8px !important;
+    font-size: 0.825rem !important;
+  }
+
+  /* Modals on mobile */
+  .modal-card {
+    margin: 12px !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 24px) !important;
+    border-radius: 14px !important;
+  }
+
+  .modal-card-body {
+    padding: 16px !important;
+  }
+
+  .modal-card-foot {
+    padding: 12px 16px !important;
+  }
+  /* Breadcrumbs Carousel on Mobile */
+  .breadcrumb ul {
+    overflow-x: auto;
+    white-space: nowrap;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .breadcrumb ul::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .header-brand-text {
+    display: none !important;
+  }
+  .hide-on-tiny-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-card-body .field.has-addons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .modal-card-body .field.has-addons .control,
+  .modal-card-body .field.has-addons .control .button,
+  .modal-card-body .field.has-addons .control .select,
+  .modal-card-body .field.has-addons .control .select select,
+  .modal-card-body .field.has-addons .control .input {
+    width: 100% !important;
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Mobile Floating Upload Widget */
+  .upload-floating-widget {
+    bottom: 12px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  /* Mobile Floating Multi-Selection Action Bar */
+  .selection-floating-bar {
+    bottom: 14px !important;
+    left: 12px !important;
+    right: 12px !important;
+    transform: none !important;
+    width: auto !important;
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    justify-content: space-between !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

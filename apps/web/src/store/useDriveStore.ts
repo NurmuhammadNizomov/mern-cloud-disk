@@ -27,6 +27,10 @@ interface DriveState {
   viewMode: ViewMode;
   setViewMode: (vm: ViewMode) => void;
 
+  // Mobile sidebar drawer state
+  mobileSidebarOpen: boolean;
+  setMobileSidebarOpen: (open: boolean) => void;
+
   // Multi-selection state ("galochka" checkboxes)
   selectedIds: string[];
   toggleSelectItem: (id: string) => void;
@@ -76,6 +80,10 @@ export const useDriveStore = create<DriveState>((set) => ({
   setSortOrder: (so) => set({ sortOrder: so }),
   viewMode: 'grid',
   setViewMode: (vm) => set({ viewMode: vm }),
+
+  // Mobile sidebar drawer
+  mobileSidebarOpen: false,
+  setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
 
   // Multi-selection
   selectedIds: [],

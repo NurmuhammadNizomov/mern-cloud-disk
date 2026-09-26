@@ -9,7 +9,8 @@ import {
   Globe,
   User as UserIcon,
   LogOut,
-  X
+  X,
+  Menu
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -17,7 +18,7 @@ import { useSettingsStore } from '../store/useSettingsStore';
 import { Language } from '../i18n/translations';
 
 export const Header: React.FC = () => {
-  const { searchQuery, setSearchQuery, viewMode, setViewMode } = useDriveStore();
+  const { searchQuery, setSearchQuery, viewMode, setViewMode, mobileSidebarOpen, setMobileSidebarOpen } = useDriveStore();
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme, language, setLanguage, t } = useSettingsStore();
 
@@ -43,8 +44,16 @@ export const Header: React.FC = () => {
 
   return (
     <header className="main-header">
-      {/* Brand logo */}
-      <div className="is-flex is-align-items-center" style={{ gap: '10px', minWidth: '200px' }}>
+      {/* Brand logo & mobile hamburger */}
+      <div className="is-flex is-align-items-center header-brand-wrapper" style={{ gap: '10px' }}>
+        <button
+          type="button"
+          className="mobile-menu-toggle-btn header-icon-btn mr-1"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label="Toggle navigation menu"
+        >
+          <Menu size={18} />
+        </button>
         <div
           style={{
             width: '36px',
@@ -55,13 +64,14 @@ export const Header: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             color: '#fff',
-            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+            flexShrink: 0
           }}
         >
           <HardDrive size={20} />
         </div>
-        <div>
-          <span style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.3px', color: 'var(--text-main)' }}>
+        <div className="header-brand-text">
+          <span style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.3px', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
             Cloud <span style={{ color: 'var(--primary)' }}>Disk</span>
           </span>
         </div>
@@ -158,6 +168,7 @@ export const Header: React.FC = () => {
 
         {/* Grid/List Segmented Switcher */}
         <div
+          className="header-view-switcher hide-on-tiny-mobile"
           style={{
             display: 'flex',
             background: 'var(--bg-subtle)',

@@ -8,7 +8,8 @@ import {
   Users,
   Star,
   Trash2,
-  Database
+  Database,
+  X
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -21,7 +22,9 @@ export const Sidebar: React.FC = () => {
     activeSection,
     setActiveSection,
     setCurrentFolderId,
-    setCreateFolderOpen
+    setCreateFolderOpen,
+    mobileSidebarOpen,
+    setMobileSidebarOpen
   } = useDriveStore();
   const { user } = useAuthStore();
   const { uploadFiles } = useDriveOperations();
@@ -48,6 +51,7 @@ export const Sidebar: React.FC = () => {
       uploadFiles(e.target.files);
       e.target.value = '';
       setDropdownOpen(false);
+      setMobileSidebarOpen(false);
     }
   };
 
@@ -66,105 +70,152 @@ export const Sidebar: React.FC = () => {
   const percent = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
 
   return (
-    <aside className="main-sidebar">
-      {/* Hidden file input */}
-      <input
-        id="global-file-input"
-        type="file"
-        multiple
-        ref={fileInputRef}
-        onChange={handleFileSelect}
-        style={{ display: 'none' }}
-      />
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* "+ New" Action Button with Dropdown */}
-      <div ref={dropdownRef} className={`dropdown mb-3 ${dropdownOpen ? 'is-active' : ''}`} style={{ width: '100%' }}>
-        <div className="dropdown-trigger" style={{ width: '100%' }}>
-          <button
-            type="button"
-            className="new-action-btn"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-          >
-            <Plus size={20} className="new-action-icon" />
-            <span>{t.addNew}</span>
-          </button>
-        </div>
-        <div className="dropdown-menu" style={{ width: '100%' }} role="menu">
-          <div className="dropdown-content">
-            <a
-              className="dropdown-item is-flex is-align-items-center"
-              onClick={() => {
-                setDropdownOpen(false);
-                fileInputRef.current?.click();
+      <aside className={`main-sidebar ${mobileSidebarOpen ? 'mobile-open' : ''}`}>
+        {/* Mobile Header with Close Button (hidden on desktop) */}
+        <div className="mobile-sidebar-header mb-4">
+          <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
               }}
-              style={{ gap: '10px' }}
             >
-              <UploadCloud size={17} className="has-text-info" />
-              <span>{t.uploadFiles}</span>
-            </a>
-            <a
-              className="dropdown-item is-flex is-align-items-center"
-              onClick={() => {
-                setDropdownOpen(false);
-                setCreateFolderOpen(true);
-              }}
-              style={{ gap: '10px' }}
-            >
-              <FolderPlus size={17} className="has-text-warning" />
-              <span>{t.newFolder}</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Section */}
-      <div className="nav-section-title">NAVIGATION</div>
-
-      <ul className="sidebar-nav-list">
-        {navItems.map((item) => {
-          const isActive = activeSection === item.id;
-          return (
-            <li key={item.id}>
-              <a
-                onClick={() => {
-                  setActiveSection(item.id);
-                  if (item.id === 'my-drive') {
-                    setCurrentFolderId(null);
-                  }
-                }}
-                className={`sidebar-nav-item ${isActive ? 'is-active' : ''}`}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* Storage Indicator Card */}
-      <div className="storage-card">
-        <div className="is-flex is-align-items-center is-justify-content-space-between">
-          <div className="is-flex is-align-items-center" style={{ gap: '8px' }}>
-            <Database size={15} style={{ color: 'var(--primary)' }} />
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>
-              {t.cloudStorage}
+              <HardDrive size={18} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-main)' }}>
+              Cloud <span style={{ color: 'var(--primary)' }}>Disk</span>
             </span>
           </div>
-          <span style={{ fontSize: '0.725rem', color: 'var(--text-faint)', fontWeight: 600 }}>
-            {percent}%
-          </span>
+          <button
+            type="button"
+            className="button is-small is-white p-1"
+            onClick={() => setMobileSidebarOpen(false)}
+            aria-label="Close sidebar"
+            style={{ width: '32px', height: '32px', borderRadius: '8px' }}
+          >
+            <X size={18} className="has-text-grey" />
+          </button>
         </div>
 
-        <div className="storage-progress-bar">
-          <div className="storage-progress-fill" style={{ width: `${Math.max(percent, 2)}%` }} />
+        {/* Hidden file input */}
+        <input
+          id="global-file-input"
+          type="file"
+          multiple
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+        />
+
+        {/* "+ New" Action Button with Dropdown */}
+        <div ref={dropdownRef} className={`dropdown mb-3 ${dropdownOpen ? 'is-active' : ''}`} style={{ width: '100%' }}>
+          <div className="dropdown-trigger" style={{ width: '100%' }}>
+            <button
+              type="button"
+              className="new-action-btn"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <Plus size={20} className="new-action-icon" />
+              <span>{t.addNew}</span>
+            </button>
+          </div>
+          <div className="dropdown-menu" style={{ width: '100%' }} role="menu">
+            <div className="dropdown-content">
+              <a
+                className="dropdown-item is-flex is-align-items-center"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  setMobileSidebarOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                style={{ gap: '10px' }}
+              >
+                <UploadCloud size={17} className="has-text-info" />
+                <span>{t.uploadFiles}</span>
+              </a>
+              <a
+                className="dropdown-item is-flex is-align-items-center"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  setMobileSidebarOpen(false);
+                  setCreateFolderOpen(true);
+                }}
+                style={{ gap: '10px' }}
+              >
+                <FolderPlus size={17} className="has-text-warning" />
+                <span>{t.newFolder}</span>
+              </a>
+            </div>
+          </div>
         </div>
 
-        <div className="is-flex is-justify-content-space-between is-size-7" style={{ color: 'var(--text-muted)' }}>
-          <span>{Number(usedGB) > 0.1 ? `${usedGB} GB` : `${usedMB} MB`}</span>
-          <span>{t.storageLimit}</span>
+        {/* Navigation Section */}
+        <div className="nav-section-title">NAVIGATION</div>
+
+        <ul className="sidebar-nav-list">
+          {navItems.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <li key={item.id}>
+                <a
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    if (item.id === 'my-drive') {
+                      setCurrentFolderId(null);
+                    }
+                    setMobileSidebarOpen(false);
+                  }}
+                  className={`sidebar-nav-item ${isActive ? 'is-active' : ''}`}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Storage Indicator Card */}
+        <div className="storage-card">
+          <div className="is-flex is-align-items-center is-justify-content-space-between">
+            <div className="is-flex is-align-items-center" style={{ gap: '8px' }}>
+              <Database size={15} style={{ color: 'var(--primary)' }} />
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                {t.cloudStorage}
+              </span>
+            </div>
+            <span style={{ fontSize: '0.725rem', color: 'var(--text-faint)', fontWeight: 600 }}>
+              {percent}%
+            </span>
+          </div>
+
+          <div className="storage-progress-bar">
+            <div className="storage-progress-fill" style={{ width: `${Math.max(percent, 2)}%` }} />
+          </div>
+
+          <div className="is-flex is-justify-content-space-between is-size-7" style={{ color: 'var(--text-muted)' }}>
+            <span>{Number(usedGB) > 0.1 ? `${usedGB} GB` : `${usedMB} MB`}</span>
+            <span>{t.storageLimit}</span>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };

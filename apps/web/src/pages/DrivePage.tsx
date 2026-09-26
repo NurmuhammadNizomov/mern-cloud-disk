@@ -324,11 +324,13 @@ export const DrivePage: React.FC = () => {
       ) : (
         /* ================= LIST TABLE VIEW ================= */
         <div
+          className="table-responsive-container"
           style={{
             backgroundColor: 'var(--bg-surface)',
             borderRadius: '14px',
             border: '1px solid var(--border)',
-            overflow: 'hidden'
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch'
           }}
         >
           <table className="table is-fullwidth is-hoverable mb-0">
@@ -345,7 +347,7 @@ export const DrivePage: React.FC = () => {
                 </th>
                 <th style={{ width: '40px' }}></th>
                 <th>{t.name}</th>
-                <th>{t.modifiedDate}</th>
+                <th className="hide-mobile">{t.modifiedDate}</th>
                 <th>{t.size}</th>
                 <th style={{ textAlign: 'right' }}>{t.actions}</th>
               </tr>
