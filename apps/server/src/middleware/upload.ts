@@ -21,7 +21,7 @@ export interface CloudinaryUploadResult {
 
 export const uploadBufferToCloudinary = (
   buffer: Buffer,
-  folderName: string = 'google-drive-clone',
+  folderName: string = 'mern-cloud-disk',
   fileName: string = 'file'
 ): Promise<CloudinaryUploadResult> => {
   return new Promise((resolve, reject) => {

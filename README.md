@@ -52,7 +52,7 @@
 
 ### 2. Installation
 ```bash
-git clone https://github.com/NurmuhammadNizomov/google-drive-clone.git mern-cloud-disk
+git clone https://github.com/NurmuhammadNizomov/mern-cloud-disk.git mern-cloud-disk
 cd mern-cloud-disk
 npm install
 ```

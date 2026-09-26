@@ -23,7 +23,7 @@ export const getFolders = async (req: AuthRequest, res: Response): Promise<void>
 
 export const getFolderPath = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const path = await FolderService.getFolderPath(id);
+  const path = await FolderService.getFolderPath(req.user!.id, req.user!.email, id);
   sendSuccess(res, StatusCodes.OK, 'Papka yo\'li', { path });
 };
 

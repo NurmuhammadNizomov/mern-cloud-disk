@@ -13,7 +13,7 @@ export interface CloudinaryUploadResult {
 export class CloudinaryService {
   static uploadBuffer(
     buffer: Buffer,
-    folderName: string = 'google-drive-clone',
+    folderName: string = 'mern-cloud-disk',
     fileName: string = 'file'
   ): Promise<CloudinaryUploadResult> {
     return new Promise((resolve, reject) => {

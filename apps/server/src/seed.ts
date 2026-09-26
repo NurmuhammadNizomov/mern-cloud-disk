@@ -9,7 +9,7 @@ dotenv.config();
 
 const seed = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/google_drive_clone';
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mern_cloud_disk';
     await mongoose.connect(mongoUri);
     logger.info('[Seed] MongoDB ga ulandi');
 

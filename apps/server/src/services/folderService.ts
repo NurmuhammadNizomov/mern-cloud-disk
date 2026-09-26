@@ -9,9 +9,20 @@ export class FolderService {
       throw new AppError('Papka nomi kiritilishi shart', StatusCodes.BAD_REQUEST);
     }
 
+    let validParentId: mongoose.Types.ObjectId | null = null;
+
+    if (parentFolder && parentFolder !== 'null' && parentFolder !== 'root' && mongoose.Types.ObjectId.isValid(parentFolder)) {
+      // STRICT ISOLATION: verify parent folder belongs to this user
+      const parent = await Folder.findOne({ _id: parentFolder, owner: userId, isTrash: false });
+      if (!parent) {
+        throw new AppError('Asosiy papka topilmadi yoki sizga tegishli emas', StatusCodes.FORBIDDEN);
+      }
+      validParentId = parent._id as mongoose.Types.ObjectId;
+    }
+
     const folder = await Folder.create({
       name: name.trim(),
-      parentFolder: parentFolder && mongoose.Types.ObjectId.isValid(parentFolder) ? parentFolder : null,
+      parentFolder: validParentId,
       owner: userId,
       color: color || '#4285F4'
     });
@@ -25,6 +36,7 @@ export class FolderService {
     isTrash?: boolean;
     search?: string;
   }) {
+    // STRICT ISOLATION: Query MUST always match owner: userId
     const query: any = { owner: userId };
 
     if (options.isTrash) {
@@ -49,16 +61,25 @@ export class FolderService {
     return await Folder.find(query).sort({ name: 1 });
   }
 
-  static async getFolderPath(folderId: string) {
+  static async getFolderPath(userId: string, userEmail: string, folderId: string) {
     if (!folderId || folderId === 'root' || !mongoose.Types.ObjectId.isValid(folderId)) {
       return [];
     }
 
+    const cleanEmail = userEmail.toLowerCase().trim();
     const path: Array<{ _id: string; name: string }> = [];
     let currentId: any = folderId;
 
     while (currentId) {
-      const folder: any = await Folder.findById(currentId).select('name parentFolder');
+      // STRICT ISOLATION: Only follow folders owned by user or explicitly shared with user
+      const folder: any = await Folder.findOne({
+        _id: currentId,
+        $or: [
+          { owner: userId },
+          { 'sharedWith.email': cleanEmail }
+        ]
+      }).select('name parentFolder');
+
       if (!folder) break;
       path.unshift({ _id: folder._id.toString(), name: folder.name });
       currentId = folder.parentFolder;
@@ -72,6 +93,7 @@ export class FolderService {
       throw new AppError('Yangi nom kiritilishi shart', StatusCodes.BAD_REQUEST);
     }
 
+    // STRICT ISOLATION: owner: userId
     const folder = await Folder.findOneAndUpdate(
       { _id: folderId, owner: userId },
       { name: name.trim() },
@@ -79,7 +101,7 @@ export class FolderService {
     );
 
     if (!folder) {
-      throw new AppError('Papka topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Papka topilmadi yoki o\'zgartirishga ruxsat yo\'q', StatusCodes.NOT_FOUND);
     }
 
     return folder;

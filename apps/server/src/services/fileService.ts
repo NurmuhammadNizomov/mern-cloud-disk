@@ -2,6 +2,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
 import { File, IFile } from '../models/File';
+import { Folder } from '../models/Folder';
 import { User } from '../models/User';
 import { CloudinaryService } from './cloudinaryService';
 import { getCategoryFromMimeAndExt } from '../utils/fileHelper';
@@ -13,10 +14,26 @@ export class FileService {
       throw new AppError('Yuklash uchun fayl tanlanmadi', StatusCodes.BAD_REQUEST);
     }
 
-    const parentFolder = folderId && mongoose.Types.ObjectId.isValid(folderId) ? folderId : null;
     const user = await User.findById(userId);
     if (!user) {
       throw new AppError('Foydalanuvchi topilmadi', StatusCodes.NOT_FOUND);
+    }
+
+    // STRICT ISOLATION: verify parent folder ownership or editor permission
+    let parentFolderId: mongoose.Types.ObjectId | null = null;
+    if (folderId && folderId !== 'null' && folderId !== 'root' && mongoose.Types.ObjectId.isValid(folderId)) {
+      const folder = await Folder.findOne({
+        _id: folderId,
+        $or: [
+          { owner: userId },
+          { sharedWith: { $elemMatch: { email: user.email.toLowerCase().trim(), role: 'editor' } } }
+        ],
+        isTrash: false
+      });
+      if (!folder) {
+        throw new AppError('Papka topilmadi yoki yuklash huquqiga ega emassiz', StatusCodes.FORBIDDEN);
+      }
+      parentFolderId = folder._id as mongoose.Types.ObjectId;
     }
 
     // Storage capacity check
@@ -31,10 +48,10 @@ export class FileService {
       const ext = path.extname(file.originalname).replace('.', '').toLowerCase();
       const category = getCategoryFromMimeAndExt(file.mimetype, ext);
 
-      // Cloudinary stream upload
+      // STRICT ISOLATION: User-specific Cloudinary namespace
       const cld = await CloudinaryService.uploadBuffer(
         file.buffer,
-        `google-drive-clone/${userId}`,
+        `mern-cloud-disk/${userId}`,
         file.originalname
       );
 
@@ -47,7 +64,7 @@ export class FileService {
         category,
         cloudinaryUrl: cld.secure_url,
         cloudinaryPublicId: cld.public_id,
-        folder: parentFolder,
+        folder: parentFolderId,
         owner: userId,
         isStarred: false,
         isTrash: false,
@@ -77,6 +94,7 @@ export class FileService {
     sortBy?: string;
     sortOrder?: string;
   }) {
+    // STRICT ISOLATION: ALWAYS match owner: userId
     const query: any = { owner: userId };
 
     if (options.isTrash) {
@@ -123,6 +141,7 @@ export class FileService {
       throw new AppError('Yangi nom kiritilishi shart', StatusCodes.BAD_REQUEST);
     }
 
+    // STRICT ISOLATION: owner: userId
     const file = await File.findOneAndUpdate(
       { _id: fileId, owner: userId },
       { name: name.trim() },
@@ -130,7 +149,7 @@ export class FileService {
     );
 
     if (!file) {
-      throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Fayl topilmadi yoki o\'zgartirishga ruxsat yo\'q', StatusCodes.NOT_FOUND);
     }
 
     return file;
@@ -176,6 +195,7 @@ export class FileService {
   }
 
   static async deletePermanently(userId: string, fileId: string) {
+    // STRICT ISOLATION: owner: userId
     const file = await File.findOne({ _id: fileId, owner: userId });
     if (!file) {
       throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
