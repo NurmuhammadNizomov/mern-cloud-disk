@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Folder as FolderIcon,
   FolderPlus,
@@ -8,7 +9,8 @@ import {
   Trash2,
   Image as ImageIcon,
   Check,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useDriveOperations } from '../hooks/useDriveOperations';
@@ -29,7 +31,10 @@ export const DrivePage: React.FC = () => {
     setCreateFolderOpen,
     selectedIds,
     selectAll,
-    clearSelection
+    clearSelection,
+    isUploading,
+    overallUploadPercent,
+    setDeletingIds
   } = useDriveStore();
   const {
     folders,
@@ -63,6 +68,8 @@ export const DrivePage: React.FC = () => {
   const isAllSelected =
     allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.includes(id));
 
+  const [isBatchOperating, setIsBatchOperating] = useState(false);
+
   const handleToggleSelectAll = () => {
     if (isAllSelected) {
       clearSelection();
@@ -72,39 +79,75 @@ export const DrivePage: React.FC = () => {
   };
 
   const handleBatchTrash = async () => {
-    for (const id of selectedIds) {
-      const isFolder = displayFolders.some((f) => f._id === id);
-      if (isFolder) {
-        await trashFolder(id);
-      } else {
-        await trashFile(id);
-      }
+    if (selectedIds.length === 0 || isBatchOperating) return;
+    try {
+      setIsBatchOperating(true);
+      setDeletingIds([...selectedIds]);
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const isFolder = displayFolders.some((f) => f._id === id);
+          if (isFolder) {
+            await trashFolder(id);
+          } else {
+            await trashFile(id);
+          }
+        })
+      );
+      clearSelection();
+    } catch (err) {
+      console.error('Batch trash error:', err);
+    } finally {
+      setIsBatchOperating(false);
+      setDeletingIds([]);
     }
-    clearSelection();
   };
 
   const handleBatchRestore = async () => {
-    for (const id of selectedIds) {
-      const isFolder = displayFolders.some((f) => f._id === id);
-      if (isFolder) {
-        await restoreFolder(id);
-      } else {
-        await restoreFile(id);
-      }
+    if (selectedIds.length === 0 || isBatchOperating) return;
+    try {
+      setIsBatchOperating(true);
+      setDeletingIds([...selectedIds]);
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const isFolder = displayFolders.some((f) => f._id === id);
+          if (isFolder) {
+            await restoreFolder(id);
+          } else {
+            await restoreFile(id);
+          }
+        })
+      );
+      clearSelection();
+    } catch (err) {
+      console.error('Batch restore error:', err);
+    } finally {
+      setIsBatchOperating(false);
+      setDeletingIds([]);
     }
-    clearSelection();
   };
 
   const handleBatchDeleteForever = async () => {
-    for (const id of selectedIds) {
-      const isFolder = displayFolders.some((f) => f._id === id);
-      if (isFolder) {
-        await deleteFolderPermanently(id);
-      } else {
-        await deleteFilePermanently(id);
-      }
+    if (selectedIds.length === 0 || isBatchOperating) return;
+    try {
+      setIsBatchOperating(true);
+      setDeletingIds([...selectedIds]);
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const isFolder = displayFolders.some((f) => f._id === id);
+          if (isFolder) {
+            await deleteFolderPermanently(id);
+          } else {
+            await deleteFilePermanently(id);
+          }
+        })
+      );
+      clearSelection();
+    } catch (err) {
+      console.error('Batch delete forever error:', err);
+    } finally {
+      setIsBatchOperating(false);
+      setDeletingIds([]);
     }
-    clearSelection();
   };
 
   const getSectionTitle = () => {
@@ -185,7 +228,8 @@ export const DrivePage: React.FC = () => {
             </button>
             <button
               type="button"
-              className="button is-small is-primary"
+              className={`button is-small is-primary ${isUploading ? 'is-loading' : ''}`}
+              disabled={isUploading}
               onClick={() => document.getElementById('global-file-input')?.click()}
               style={{
                 borderRadius: '8px',
@@ -195,8 +239,12 @@ export const DrivePage: React.FC = () => {
                 padding: '0 14px'
               }}
             >
-              <UploadCloud size={16} />
-              <span>{t.uploadFiles}</span>
+              {isUploading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <UploadCloud size={16} />
+              )}
+              <span>{isUploading ? `${t.uploadingStatus}... ${overallUploadPercent}%` : t.uploadFiles}</span>
             </button>
           </div>
         )}
@@ -256,12 +304,17 @@ export const DrivePage: React.FC = () => {
             <div className="is-flex is-justify-content-center" style={{ gap: '10px' }}>
               <button
                 type="button"
-                className="button is-small is-primary"
+                className={`button is-small is-primary ${isUploading ? 'is-loading' : ''}`}
+                disabled={isUploading}
                 onClick={() => document.getElementById('global-file-input')?.click()}
                 style={{ borderRadius: '8px', fontWeight: 600, gap: '6px' }}
               >
-                <UploadCloud size={15} />
-                <span>{t.uploadFiles}</span>
+                {isUploading ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <UploadCloud size={15} />
+                )}
+                <span>{isUploading ? `${t.uploadingStatus}... ${overallUploadPercent}%` : t.uploadFiles}</span>
               </button>
               <button
                 type="button"
@@ -381,6 +434,7 @@ export const DrivePage: React.FC = () => {
             <button
               type="button"
               className="button is-small is-white"
+              disabled={isBatchOperating}
               onClick={clearSelection}
               style={{ fontSize: '0.8rem', fontWeight: 500 }}
             >
@@ -390,32 +444,35 @@ export const DrivePage: React.FC = () => {
               <>
                 <button
                   type="button"
-                  className="button is-small is-info is-light"
+                  className={`button is-small is-info is-light ${isBatchOperating ? 'is-loading' : ''}`}
+                  disabled={isBatchOperating}
                   onClick={handleBatchRestore}
                   style={{ borderRadius: '8px', fontWeight: 600, gap: '6px' }}
                 >
                   <RotateCcw size={14} />
-                  <span>{t.restoreSelected}</span>
+                  <span>{isBatchOperating ? t.restoring : t.restoreSelected}</span>
                 </button>
                 <button
                   type="button"
-                  className="button is-small is-danger is-light"
+                  className={`button is-small is-danger is-light ${isBatchOperating ? 'is-loading' : ''}`}
+                  disabled={isBatchOperating}
                   onClick={handleBatchDeleteForever}
                   style={{ borderRadius: '8px', fontWeight: 600, gap: '6px' }}
                 >
                   <Trash2 size={14} />
-                  <span>{t.deleteForeverSelected}</span>
+                  <span>{isBatchOperating ? t.deleting : t.deleteForeverSelected}</span>
                 </button>
               </>
             ) : (
               <button
                 type="button"
-                className="button is-small is-danger is-light"
+                className={`button is-small is-danger is-light ${isBatchOperating ? 'is-loading' : ''}`}
+                disabled={isBatchOperating}
                 onClick={handleBatchTrash}
                 style={{ borderRadius: '8px', fontWeight: 600, gap: '6px' }}
               >
                 <Trash2 size={14} />
-                <span>{t.deleteSelected}</span>
+                <span>{isBatchOperating ? t.deleting : t.deleteSelected}</span>
               </button>
             )}
           </div>

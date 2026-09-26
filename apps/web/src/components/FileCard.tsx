@@ -14,7 +14,8 @@ import {
   Trash2,
   Eye,
   RotateCcw,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { FileItem } from '../types';
 import { useDriveStore } from '../store/useDriveStore';
@@ -33,7 +34,8 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
     setRenameModalItem,
     setPreviewFile,
     selectedIds,
-    toggleSelectItem
+    toggleSelectItem,
+    deletingIds
   } = useDriveStore();
   const { toggleStarFile, trashFile, restoreFile, deleteFilePermanently } = useDriveOperations();
   const { t } = useSettingsStore();
@@ -42,6 +44,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(file._id);
+  const isDeleting = deletingIds.includes(file._id);
 
   // Click outside listener
   useEffect(() => {
@@ -82,13 +85,24 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
   return (
     <div
       ref={cardRef}
-      className={`drive-card mb-4 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''}`}
-      onClick={() => !isTrash && setPreviewFile(file)}
+      className={`drive-card mb-4 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''} ${isDeleting ? 'is-deleting' : ''}`}
+      onClick={() => !isTrash && !isDeleting && setPreviewFile(file)}
       style={{
         overflow: menuOpen ? 'visible' : 'hidden',
-        zIndex: menuOpen ? 1000 : undefined
+        zIndex: menuOpen ? 1000 : undefined,
+        position: 'relative'
       }}
     >
+      {/* Loading Overlay when Deleting or Restoring */}
+      {isDeleting && (
+        <div className="card-loading-overlay">
+          <Loader2 size={20} className="animate-spin has-text-danger mr-2" />
+          <span className="is-size-7 has-text-danger has-text-weight-semibold">
+            {t.deleting}
+          </span>
+        </div>
+      )}
+
       {/* File Preview Header */}
       <div className="file-card-preview" style={{ position: 'relative' }}>
         {/* Floating Checkbox ("galochka") */}
@@ -251,10 +265,10 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                     <hr className="dropdown-divider" />
                     <a
                       className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         setMenuOpen(false);
-                        trashFile(file._id);
+                        await trashFile(file._id);
                       }}
                       style={{ gap: '0.6rem' }}
                     >
@@ -266,10 +280,10 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                   <>
                     <a
                       className="dropdown-item is-flex is-align-items-center py-2 has-text-info"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         setMenuOpen(false);
-                        restoreFile(file._id);
+                        await restoreFile(file._id);
                       }}
                       style={{ gap: '0.6rem' }}
                     >
@@ -279,10 +293,10 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                     <hr className="dropdown-divider" />
                     <a
                       className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         setMenuOpen(false);
-                        deleteFilePermanently(file._id);
+                        await deleteFilePermanently(file._id);
                       }}
                       style={{ gap: '0.6rem' }}
                     >

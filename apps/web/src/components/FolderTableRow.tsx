@@ -8,7 +8,8 @@ import {
   Edit2,
   Trash2,
   RotateCcw,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { Folder } from '../types';
 import { useDriveStore } from '../store/useDriveStore';
@@ -27,7 +28,8 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
     setRenameModalItem,
     activeSection,
     selectedIds,
-    toggleSelectItem
+    toggleSelectItem,
+    deletingIds
   } = useDriveStore();
   const {
     toggleStarFolder,
@@ -61,14 +63,15 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
   };
 
   const folderColor = folder.color || '#3b82f6';
+  const isDeleting = deletingIds.includes(folder._id);
 
   return (
     <tr
       ref={rowRef}
-      style={{ cursor: 'pointer' }}
-      onClick={handleOpenFolder}
-      onDoubleClick={handleOpenFolder}
-      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''}`}
+      style={{ cursor: isDeleting ? 'default' : 'pointer' }}
+      onClick={isDeleting ? undefined : handleOpenFolder}
+      onDoubleClick={isDeleting ? undefined : handleOpenFolder}
+      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''} ${isDeleting ? 'row-loading-state' : ''}`}
     >
       {/* Checkbox column */}
       <td style={{ width: '40px', verticalAlign: 'middle' }}>
@@ -77,7 +80,7 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
           style={{ opacity: isSelected ? 1 : undefined }}
           onClick={(e) => {
             e.stopPropagation();
-            toggleSelectItem(folder._id);
+            if (!isDeleting) toggleSelectItem(folder._id);
           }}
           title="Select"
         >
@@ -91,6 +94,7 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
           <button
             type="button"
             className="button is-small is-white p-1"
+            disabled={isDeleting}
             onClick={(e) => {
               e.stopPropagation();
               toggleStarFolder(folder._id);
@@ -114,6 +118,11 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
           <span className="has-text-weight-semibold is-size-6" style={{ color: 'var(--text-main)' }}>
             {folder.name}
           </span>
+          {isDeleting && (
+            <span className="tag is-small is-danger is-light" style={{ fontSize: '0.7rem' }}>
+              <Loader2 size={12} className="animate-spin mr-1" /> {t.deleting}
+            </span>
+          )}
         </div>
       </td>
 
@@ -129,20 +138,25 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
 
       {/* Actions */}
       <td style={{ verticalAlign: 'middle', textAlign: 'right' }}>
-        <div className={`dropdown is-right ${menuOpen ? 'is-active' : ''}`}>
-          <div className="dropdown-trigger">
-            <button
-              type="button"
-              className="button is-small is-white p-1"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen(!menuOpen);
-              }}
-              style={{ width: '28px', height: '28px', borderRadius: '6px' }}
-            >
-              <MoreVertical size={16} className="has-text-grey" />
-            </button>
+        {isDeleting ? (
+          <div className="is-flex is-justify-content-flex-end is-align-items-center pr-1">
+            <Loader2 size={16} className="animate-spin has-text-danger" />
           </div>
+        ) : (
+          <div className={`dropdown is-right ${menuOpen ? 'is-active' : ''}`}>
+            <div className="dropdown-trigger">
+              <button
+                type="button"
+                className="button is-small is-white p-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                }}
+                style={{ width: '28px', height: '28px', borderRadius: '6px' }}
+              >
+                <MoreVertical size={16} className="has-text-grey" />
+              </button>
+            </div>
           <div className="dropdown-menu" role="menu">
             <div className="dropdown-content">
               {!isTrash ? (
@@ -186,10 +200,10 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
                   <hr className="dropdown-divider" />
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      trashFolder(folder._id);
+                      await trashFolder(folder._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -201,10 +215,10 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
                 <>
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-info"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      restoreFolder(folder._id);
+                      await restoreFolder(folder._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -214,10 +228,10 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
                   <hr className="dropdown-divider" />
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      deleteFolderPermanently(folder._id);
+                      await deleteFolderPermanently(folder._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -229,6 +243,7 @@ export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
             </div>
           </div>
         </div>
+      )}
       </td>
     </tr>
   );

@@ -7,7 +7,8 @@ import {
   ChevronUp,
   X,
   FileText,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -46,7 +47,11 @@ export const UploadManager: React.FC = () => {
       {/* Widget Header */}
       <div className="upload-header">
         <div className="is-flex is-align-items-center" style={{ gap: '8px', minWidth: 0 }}>
-          <UploadCloud size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          {isUploading ? (
+            <Loader2 size={18} className="animate-spin" style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          ) : (
+            <UploadCloud size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          )}
           <span
             style={{
               fontSize: '0.85rem',
@@ -123,18 +128,21 @@ export const UploadManager: React.FC = () => {
                     <CheckCircle2 size={17} style={{ color: 'var(--color-green)' }} />
                   )}
                   {item.status === 'uploading' && (
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        color: 'var(--primary)',
-                        background: 'rgba(37, 99, 235, 0.1)',
-                        padding: '2px 6px',
-                        borderRadius: '6px'
-                      }}
-                    >
-                      {item.progress}%
-                    </span>
+                    <div className="is-flex is-align-items-center" style={{ gap: '6px' }}>
+                      <Loader2 size={13} className="animate-spin has-text-info" />
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: 'var(--primary)',
+                          background: 'rgba(37, 99, 235, 0.1)',
+                          padding: '2px 6px',
+                          borderRadius: '6px'
+                        }}
+                      >
+                        {item.progress}%
+                      </span>
+                    </div>
                   )}
                   {item.status === 'pending' && (
                     <Clock size={16} style={{ color: 'var(--text-muted)' }} />

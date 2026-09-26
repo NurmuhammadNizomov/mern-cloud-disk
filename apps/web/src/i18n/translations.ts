@@ -45,6 +45,9 @@ export const translations = {
     deleteSelected: 'Delete selected',
     restoreSelected: 'Restore selected',
     deleteForeverSelected: 'Delete forever',
+    deleting: 'Deleting...',
+    restoring: 'Restoring...',
+    uploading: 'Uploading...',
 
     // Filters & Sorting
     searchPlaceholder: 'Search files and folders in Disk...',
@@ -165,6 +168,9 @@ export const translations = {
     deleteSelected: 'В корзину',
     restoreSelected: 'Восстановить',
     deleteForeverSelected: 'Удалить навсегда',
+    deleting: 'Удаление...',
+    restoring: 'Восстановление...',
+    uploading: 'Загрузка...',
 
     // Filters & Sorting
     searchPlaceholder: 'Поиск файлов и папок на Диске...',

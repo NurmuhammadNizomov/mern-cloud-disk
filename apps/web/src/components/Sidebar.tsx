@@ -9,7 +9,8 @@ import {
   Star,
   Trash2,
   Database,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -24,7 +25,9 @@ export const Sidebar: React.FC = () => {
     setCurrentFolderId,
     setCreateFolderOpen,
     mobileSidebarOpen,
-    setMobileSidebarOpen
+    setMobileSidebarOpen,
+    isUploading,
+    overallUploadPercent
   } = useDriveStore();
   const { user } = useAuthStore();
   const { uploadFiles } = useDriveOperations();
@@ -132,8 +135,12 @@ export const Sidebar: React.FC = () => {
               className="new-action-btn"
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
-              <Plus size={20} className="new-action-icon" />
-              <span>{t.addNew}</span>
+              {isUploading ? (
+                <Loader2 size={18} className="animate-spin new-action-icon has-text-primary" />
+              ) : (
+                <Plus size={20} className="new-action-icon" />
+              )}
+              <span>{isUploading ? `${t.uploadingStatus} (${overallUploadPercent}%)` : t.addNew}</span>
             </button>
           </div>
           <div className="dropdown-menu" style={{ width: '100%' }} role="menu">
@@ -141,14 +148,19 @@ export const Sidebar: React.FC = () => {
               <a
                 className="dropdown-item is-flex is-align-items-center"
                 onClick={() => {
+                  if (isUploading) return;
                   setDropdownOpen(false);
                   setMobileSidebarOpen(false);
                   fileInputRef.current?.click();
                 }}
                 style={{ gap: '10px' }}
               >
-                <UploadCloud size={17} className="has-text-info" />
-                <span>{t.uploadFiles}</span>
+                {isUploading ? (
+                  <Loader2 size={17} className="animate-spin has-text-info" />
+                ) : (
+                  <UploadCloud size={17} className="has-text-info" />
+                )}
+                <span>{isUploading ? `${t.uploadingStatus}... ${overallUploadPercent}%` : t.uploadFiles}</span>
               </a>
               <a
                 className="dropdown-item is-flex is-align-items-center"

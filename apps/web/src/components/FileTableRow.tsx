@@ -14,7 +14,8 @@ import {
   Trash2,
   Eye,
   RotateCcw,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { FileItem } from '../types';
 import { useDriveStore } from '../store/useDriveStore';
@@ -33,7 +34,8 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
     setRenameModalItem,
     setPreviewFile,
     selectedIds,
-    toggleSelectItem
+    toggleSelectItem,
+    deletingIds
   } = useDriveStore();
   const { toggleStarFile, trashFile, restoreFile, deleteFilePermanently } = useDriveOperations();
   const { t } = useSettingsStore();
@@ -42,6 +44,7 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
   const rowRef = useRef<HTMLTableRowElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(file._id);
+  const isDeleting = deletingIds.includes(file._id);
 
   // Click outside to close menu
   useEffect(() => {
@@ -82,9 +85,9 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
   return (
     <tr
       ref={rowRef}
-      style={{ cursor: 'pointer' }}
-      onClick={() => !isTrash && setPreviewFile(file)}
-      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''}`}
+      style={{ cursor: isDeleting ? 'default' : 'pointer' }}
+      onClick={() => !isTrash && !isDeleting && setPreviewFile(file)}
+      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''} ${isDeleting ? 'row-loading-state' : ''}`}
     >
       {/* Checkbox ("galochka") column */}
       <td style={{ width: '40px', verticalAlign: 'middle' }}>
@@ -93,7 +96,7 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
           style={{ opacity: isSelected ? 1 : undefined }}
           onClick={(e) => {
             e.stopPropagation();
-            toggleSelectItem(file._id);
+            if (!isDeleting) toggleSelectItem(file._id);
           }}
           title="Select"
         >
@@ -107,6 +110,7 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
           <button
             type="button"
             className="button is-small is-white p-1"
+            disabled={isDeleting}
             onClick={(e) => {
               e.stopPropagation();
               toggleStarFile(file._id);
@@ -130,6 +134,11 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
           <span className="has-text-weight-medium is-size-6" style={{ color: 'var(--text-main)' }}>
             {file.name}
           </span>
+          {isDeleting && (
+            <span className="tag is-small is-danger is-light" style={{ fontSize: '0.7rem' }}>
+              <Loader2 size={12} className="animate-spin mr-1" /> {t.deleting}
+            </span>
+          )}
         </div>
       </td>
 
@@ -145,20 +154,25 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
 
       {/* Actions */}
       <td style={{ verticalAlign: 'middle', textAlign: 'right' }}>
-        <div className={`dropdown is-right ${menuOpen ? 'is-active' : ''}`}>
-          <div className="dropdown-trigger">
-            <button
-              type="button"
-              className="button is-small is-white p-1"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen(!menuOpen);
-              }}
-              style={{ width: '28px', height: '28px', borderRadius: '6px' }}
-            >
-              <MoreVertical size={16} className="has-text-grey" />
-            </button>
+        {isDeleting ? (
+          <div className="is-flex is-justify-content-flex-end is-align-items-center pr-1">
+            <Loader2 size={16} className="animate-spin has-text-danger" />
           </div>
+        ) : (
+          <div className={`dropdown is-right ${menuOpen ? 'is-active' : ''}`}>
+            <div className="dropdown-trigger">
+              <button
+                type="button"
+                className="button is-small is-white p-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                }}
+                style={{ width: '28px', height: '28px', borderRadius: '6px' }}
+              >
+                <MoreVertical size={16} className="has-text-grey" />
+              </button>
+            </div>
           <div className="dropdown-menu" role="menu">
             <div className="dropdown-content">
               {!isTrash ? (
@@ -217,10 +231,10 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
                   <hr className="dropdown-divider" />
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      trashFile(file._id);
+                      await trashFile(file._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -232,10 +246,10 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
                 <>
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-info"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      restoreFile(file._id);
+                      await restoreFile(file._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -245,10 +259,10 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
                   <hr className="dropdown-divider" />
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      deleteFilePermanently(file._id);
+                      await deleteFilePermanently(file._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -260,6 +274,7 @@ export const FileTableRow: React.FC<FileTableRowProps> = ({ file }) => {
             </div>
           </div>
         </div>
+      )}
       </td>
     </tr>
   );

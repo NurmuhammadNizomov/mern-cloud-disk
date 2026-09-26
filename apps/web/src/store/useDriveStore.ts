@@ -37,6 +37,12 @@ interface DriveState {
   selectAll: (ids: string[]) => void;
   clearSelection: () => void;
 
+  // Deleting / item action loading state
+  deletingIds: string[];
+  addDeletingId: (id: string) => void;
+  removeDeletingId: (id: string) => void;
+  setDeletingIds: (ids: string[]) => void;
+
   // Drag & drop state
   isDraggingOver: boolean;
   setIsDraggingOver: (dragging: boolean) => void;
@@ -67,11 +73,11 @@ interface DriveState {
 export const useDriveStore = create<DriveState>((set) => ({
   // Navigation & Filtering
   currentFolderId: null,
-  setCurrentFolderId: (id) => set({ currentFolderId: id, selectedIds: [] }),
+  setCurrentFolderId: (id) => set({ currentFolderId: id, selectedIds: [], deletingIds: [] }),
   activeSection: 'my-drive',
-  setActiveSection: (sec) => set({ activeSection: sec, currentFolderId: null, selectedIds: [] }),
+  setActiveSection: (sec) => set({ activeSection: sec, currentFolderId: null, selectedIds: [], deletingIds: [] }),
   filterCategory: 'all',
-  setFilterCategory: (cat) => set({ filterCategory: cat, selectedIds: [] }),
+  setFilterCategory: (cat) => set({ filterCategory: cat, selectedIds: [], deletingIds: [] }),
   searchQuery: '',
   setSearchQuery: (q) => set({ searchQuery: q }),
   sortBy: 'date',
@@ -95,6 +101,18 @@ export const useDriveStore = create<DriveState>((set) => ({
     })),
   selectAll: (ids) => set({ selectedIds: ids }),
   clearSelection: () => set({ selectedIds: [] }),
+
+  // Deleting / item action loading
+  deletingIds: [],
+  addDeletingId: (id) =>
+    set((state) => ({
+      deletingIds: state.deletingIds.includes(id) ? state.deletingIds : [...state.deletingIds, id]
+    })),
+  removeDeletingId: (id) =>
+    set((state) => ({
+      deletingIds: state.deletingIds.filter((item) => item !== id)
+    })),
+  setDeletingIds: (ids) => set({ deletingIds: ids }),
 
   // Drag & drop
   isDraggingOver: false,

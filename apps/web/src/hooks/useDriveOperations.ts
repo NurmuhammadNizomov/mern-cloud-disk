@@ -17,7 +17,9 @@ export const useDriveOperations = () => {
     setUploadQueue,
     setIsUploading,
     setOverallUploadPercent,
-    setShowUploadWidget
+    setShowUploadWidget,
+    addDeletingId,
+    removeDeletingId
   } = useDriveStore();
 
   const isStarred = activeSection === 'starred';
@@ -139,7 +141,7 @@ export const useDriveOperations = () => {
       invalidateDriveData();
     } catch (err: any) {
       console.error('Upload failed:', err);
-      const errMsg = err?.response?.data?.message || err?.message || 'Yuklashda xatolik yuz berdi';
+      const errMsg = err?.response?.data?.message || err?.message || 'Upload error occurred';
       setUploadQueue((prev) =>
         prev.map((item) => {
           if (newItems.some((ni) => ni.id === item.id)) {
@@ -226,11 +228,53 @@ export const useDriveOperations = () => {
     renameFile: (id: string, name: string) => renameFileMutation.mutateAsync({ id, name }),
     toggleStarFolder: (id: string) => toggleStarFolderMutation.mutateAsync(id),
     toggleStarFile: (id: string) => toggleStarFileMutation.mutateAsync(id),
-    trashFolder: (id: string) => trashFolderMutation.mutateAsync(id),
-    trashFile: (id: string) => trashFileMutation.mutateAsync(id),
-    restoreFolder: (id: string) => restoreFolderMutation.mutateAsync(id),
-    restoreFile: (id: string) => restoreFileMutation.mutateAsync(id),
-    deleteFolderPermanently: (id: string) => deleteFolderPermanentlyMutation.mutateAsync(id),
-    deleteFilePermanently: (id: string) => deleteFilePermanentlyMutation.mutateAsync(id)
+    trashFolder: async (id: string) => {
+      addDeletingId(id);
+      try {
+        return await trashFolderMutation.mutateAsync(id);
+      } finally {
+        removeDeletingId(id);
+      }
+    },
+    trashFile: async (id: string) => {
+      addDeletingId(id);
+      try {
+        return await trashFileMutation.mutateAsync(id);
+      } finally {
+        removeDeletingId(id);
+      }
+    },
+    restoreFolder: async (id: string) => {
+      addDeletingId(id);
+      try {
+        return await restoreFolderMutation.mutateAsync(id);
+      } finally {
+        removeDeletingId(id);
+      }
+    },
+    restoreFile: async (id: string) => {
+      addDeletingId(id);
+      try {
+        return await restoreFileMutation.mutateAsync(id);
+      } finally {
+        removeDeletingId(id);
+      }
+    },
+    deleteFolderPermanently: async (id: string) => {
+      addDeletingId(id);
+      try {
+        return await deleteFolderPermanentlyMutation.mutateAsync(id);
+      } finally {
+        removeDeletingId(id);
+      }
+    },
+    deleteFilePermanently: async (id: string) => {
+      addDeletingId(id);
+      try {
+        return await deleteFilePermanentlyMutation.mutateAsync(id);
+      } finally {
+        removeDeletingId(id);
+      }
+    }
   };
 };

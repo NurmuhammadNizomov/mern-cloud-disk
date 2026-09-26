@@ -8,7 +8,8 @@ import {
   Edit2,
   Share2,
   RotateCcw,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { Folder } from '../types';
 import { useDriveStore } from '../store/useDriveStore';
@@ -26,7 +27,8 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
     setRenameModalItem,
     activeSection,
     selectedIds,
-    toggleSelectItem
+    toggleSelectItem,
+    deletingIds
   } = useDriveStore();
   const {
     toggleStarFolder,
@@ -60,17 +62,29 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
   };
 
   const folderColor = folder.color || '#3b82f6';
+  const isDeleting = deletingIds.includes(folder._id);
 
   return (
     <div
       ref={cardRef}
-      className={`drive-card folder-card mb-3 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''}`}
-      onClick={handleOpenFolder}
-      onDoubleClick={handleOpenFolder}
+      className={`drive-card folder-card mb-3 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''} ${isDeleting ? 'is-deleting' : ''}`}
+      onClick={isDeleting ? undefined : handleOpenFolder}
+      onDoubleClick={isDeleting ? undefined : handleOpenFolder}
       style={{
-        zIndex: menuOpen ? 1000 : undefined
+        zIndex: menuOpen ? 1000 : undefined,
+        position: 'relative'
       }}
     >
+      {/* Loading Overlay when Deleting or Restoring */}
+      {isDeleting && (
+        <div className="card-loading-overlay">
+          <Loader2 size={18} className="animate-spin has-text-danger mr-2" />
+          <span className="is-size-7 has-text-danger has-text-weight-semibold">
+            {t.deleting}
+          </span>
+        </div>
+      )}
+
       {/* Checkbox ("galochka") for multi-selection */}
       <div
         className={`card-checkbox ${isSelected ? 'is-checked' : ''}`}
@@ -191,10 +205,10 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
                   <hr className="dropdown-divider" />
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      trashFolder(folder._id);
+                      await trashFolder(folder._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -206,10 +220,10 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
                 <>
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-info"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      restoreFolder(folder._id);
+                      await restoreFolder(folder._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
@@ -219,10 +233,10 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
                   <hr className="dropdown-divider" />
                   <a
                     className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      deleteFolderPermanently(folder._id);
+                      await deleteFolderPermanently(folder._id);
                     }}
                     style={{ gap: '0.6rem' }}
                   >
