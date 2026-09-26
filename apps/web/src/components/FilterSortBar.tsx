@@ -35,19 +35,21 @@ export const FilterSortBar: React.FC = () => {
     { id: 'archive', label: t.archives, icon: <Archive size={14} /> }
   ];
 
+  const showFoldersCount = filterCategory === 'all' && folders.length > 0;
+
   return (
-    <div className="is-flex is-justify-content-space-between is-align-items-center mb-4 is-flex-wrap-wrap" style={{ gap: '1rem' }}>
-      {/* Category Pills (Google & Yandex Disk style) */}
+    <div className="is-flex is-justify-content-space-between is-align-items-center mb-4 is-flex-wrap-wrap" style={{ gap: '12px' }}>
+      {/* Category Pills */}
       {activeSection === 'my-drive' && (
-        <div className="is-flex is-align-items-center is-flex-wrap-wrap" style={{ gap: '0.5rem' }}>
+        <div className="is-flex is-align-items-center is-flex-wrap-wrap" style={{ gap: '8px' }}>
           {categories.map((cat) => {
             const isActive = filterCategory === cat.id;
             return (
               <button
                 key={cat.id}
+                type="button"
                 onClick={() => setFilterCategory(cat.id)}
-                className={`category-pill is-flex is-align-items-center ${isActive ? 'active' : ''}`}
-                style={{ gap: '0.4rem' }}
+                className={`category-pill ${isActive ? 'active' : ''}`}
               >
                 {cat.icon}
                 <span>{cat.label}</span>
@@ -58,9 +60,9 @@ export const FilterSortBar: React.FC = () => {
       )}
 
       {/* Sorting & Item Count */}
-      <div className="is-flex is-align-items-center ml-auto" style={{ gap: '0.75rem' }}>
-        <span className="is-size-7 has-text-grey">
-          {folders.length > 0 && `${folders.length} ${t.foldersCount}, `}
+      <div className="is-flex is-align-items-center ml-auto" style={{ gap: '10px' }}>
+        <span className="is-size-7" style={{ color: 'var(--text-muted)' }}>
+          {showFoldersCount && `${folders.length} ${t.foldersCount}, `}
           {files.length} {t.filesCount}
         </span>
 
@@ -68,7 +70,7 @@ export const FilterSortBar: React.FC = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortBy)}
-            style={{ borderRadius: '8px' }}
+            style={{ borderRadius: '8px', fontWeight: 500 }}
           >
             <option value="date">{t.sortByDate}</option>
             <option value="name">{t.sortByName}</option>
@@ -77,13 +79,14 @@ export const FilterSortBar: React.FC = () => {
         </div>
 
         <button
+          type="button"
           className="button is-small is-light"
           onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
           title={sortOrder === 'asc' ? t.ascending : t.descending}
-          style={{ borderRadius: '8px' }}
+          style={{ borderRadius: '8px', gap: '4px', fontWeight: 500 }}
         >
-          <ArrowUpDown size={14} className={sortOrder === 'asc' ? 'has-text-info' : 'has-text-dark'} />
-          <span className="ml-1 is-size-7">{sortOrder === 'asc' ? t.ascending : t.descending}</span>
+          <ArrowUpDown size={13} style={{ color: sortOrder === 'asc' ? 'var(--primary)' : 'var(--text-main)' }} />
+          <span className="is-size-7">{sortOrder === 'asc' ? t.ascending : t.descending}</span>
         </button>
       </div>
     </div>

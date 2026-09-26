@@ -7,7 +7,7 @@ import { sendSuccess } from '../utils/responseHelper';
 export const register = async (req: AuthRequest, res: Response): Promise<void> => {
   const { name, email, password } = req.body;
   const result = await AuthService.register(name, email, password);
-  sendSuccess(res, StatusCodes.CREATED, 'Muvaffaqiyatli ro\'yxatdan o\'tdingiz. Emailingizga tasdiqlash kodi yuborildi', result);
+  sendSuccess(res, StatusCodes.CREATED, 'Registration successful. Verification code sent to email', result);
 };
 
 export const verifyEmail = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -25,19 +25,19 @@ export const resendVerification = async (req: AuthRequest, res: Response): Promi
 export const login = async (req: AuthRequest, res: Response): Promise<void> => {
   const { email, password } = req.body;
   const result = await AuthService.login(email, password);
-  sendSuccess(res, StatusCodes.OK, 'Tizimga muvaffaqiyatli kirdingiz', result);
+  sendSuccess(res, StatusCodes.OK, 'Login successful', result);
 };
 
 export const refreshToken = async (req: AuthRequest, res: Response): Promise<void> => {
   const { refreshToken: token } = req.body;
   const result = await AuthService.refreshTokens(token);
-  sendSuccess(res, StatusCodes.OK, 'Token muvaffaqiyatli yangilandi', result);
+  sendSuccess(res, StatusCodes.OK, 'Token refreshed successfully', result);
 };
 
 export const logout = async (req: AuthRequest, res: Response): Promise<void> => {
   const { refreshToken: token } = req.body;
   await AuthService.logout(req.user!.id, token);
-  sendSuccess(res, StatusCodes.OK, 'Tizimdan muvaffaqiyatli chiqildi');
+  sendSuccess(res, StatusCodes.OK, 'Logged out successfully');
 };
 
 export const forgotPassword = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -54,5 +54,5 @@ export const resetPassword = async (req: AuthRequest, res: Response): Promise<vo
 
 export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   const profile = await AuthService.getProfile(req.user!.id);
-  sendSuccess(res, StatusCodes.OK, 'Foydalanuvchi ma\'lumotlari', { user: profile });
+  sendSuccess(res, StatusCodes.OK, 'User profile retrieved successfully', { user: profile });
 };

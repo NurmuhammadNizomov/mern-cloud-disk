@@ -50,7 +50,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister }) => {
       className="is-flex is-align-items-center is-justify-content-center"
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #eff6ff 50%, #f8fafc 100%)',
+        background: 'var(--bg-canvas)',
         padding: '1.5rem',
         position: 'relative'
       }}
@@ -65,12 +65,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister }) => {
           >
             <option value="en">🇬🇧 English</option>
             <option value="ru">🇷🇺 Русский</option>
-            <option value="uz">🇺🇿 O'zbekcha</option>
           </select>
         </div>
       </div>
 
-      <div className="card p-5" style={{ width: '100%', maxWidth: '420px', borderRadius: '18px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+      <div className="card p-5" style={{ width: '100%', maxWidth: '420px', borderRadius: '18px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)' }}>
         {/* Brand */}
         <div className="has-text-centered mb-5">
           <div

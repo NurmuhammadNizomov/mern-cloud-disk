@@ -11,12 +11,12 @@ import { AppError } from '../middleware/errorHandler';
 export class FileService {
   static async uploadFiles(userId: string, rawFiles: Express.Multer.File[], folderId?: string | null) {
     if (!rawFiles || rawFiles.length === 0) {
-      throw new AppError('Yuklash uchun fayl tanlanmadi', StatusCodes.BAD_REQUEST);
+      throw new AppError('No files selected for upload', StatusCodes.BAD_REQUEST);
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError('Foydalanuvchi topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('User not found', StatusCodes.NOT_FOUND);
     }
 
     // STRICT ISOLATION: verify parent folder ownership or editor permission
@@ -31,7 +31,7 @@ export class FileService {
         isTrash: false
       });
       if (!folder) {
-        throw new AppError('Papka topilmadi yoki yuklash huquqiga ega emassiz', StatusCodes.FORBIDDEN);
+        throw new AppError('Folder not found or upload access denied', StatusCodes.FORBIDDEN);
       }
       parentFolderId = folder._id as mongoose.Types.ObjectId;
     }
@@ -39,7 +39,7 @@ export class FileService {
     // Storage capacity check
     const totalBytes = rawFiles.reduce((acc, f) => acc + f.size, 0);
     if (user.storageUsed + totalBytes > user.storageLimit) {
-      throw new AppError('Xotira to\'ldi! Bulutli diskda yetarli joy yo\'q (Maksimal: 15 GB)', StatusCodes.BAD_REQUEST);
+      throw new AppError('Storage quota exceeded! Not enough cloud storage (Max: 15 GB)', StatusCodes.BAD_REQUEST);
     }
 
     const uploadedFiles: IFile[] = [];
@@ -138,7 +138,7 @@ export class FileService {
 
   static async rename(userId: string, fileId: string, name: string) {
     if (!name || !name.trim()) {
-      throw new AppError('Yangi nom kiritilishi shart', StatusCodes.BAD_REQUEST);
+      throw new AppError('New name is required', StatusCodes.BAD_REQUEST);
     }
 
     // STRICT ISOLATION: owner: userId
@@ -149,7 +149,7 @@ export class FileService {
     );
 
     if (!file) {
-      throw new AppError('Fayl topilmadi yoki o\'zgartirishga ruxsat yo\'q', StatusCodes.NOT_FOUND);
+      throw new AppError('File not found or access denied', StatusCodes.NOT_FOUND);
     }
 
     return file;
@@ -158,7 +158,7 @@ export class FileService {
   static async toggleStar(userId: string, fileId: string) {
     const file = await File.findOne({ _id: fileId, owner: userId });
     if (!file) {
-      throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('File not found', StatusCodes.NOT_FOUND);
     }
 
     file.isStarred = !file.isStarred;
@@ -174,7 +174,7 @@ export class FileService {
     );
 
     if (!file) {
-      throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('File not found', StatusCodes.NOT_FOUND);
     }
 
     return file;
@@ -188,7 +188,7 @@ export class FileService {
     );
 
     if (!file) {
-      throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('File not found', StatusCodes.NOT_FOUND);
     }
 
     return file;
@@ -198,7 +198,7 @@ export class FileService {
     // STRICT ISOLATION: owner: userId
     const file = await File.findOne({ _id: fileId, owner: userId });
     if (!file) {
-      throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('File not found', StatusCodes.NOT_FOUND);
     }
 
     // Delete asset from Cloudinary

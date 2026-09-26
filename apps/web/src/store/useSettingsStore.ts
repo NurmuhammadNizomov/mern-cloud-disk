@@ -12,7 +12,8 @@ interface SettingsState {
 
 export const useSettingsStore = create<SettingsState>((set, get) => {
   const savedTheme = (storage.get(STORAGE_KEYS.THEME) as 'light' | 'dark') || 'light';
-  const savedLang = (storage.get(STORAGE_KEYS.LANGUAGE) as Language) || 'en'; // default en
+  const rawLang = storage.get(STORAGE_KEYS.LANGUAGE) as string;
+  const savedLang: Language = rawLang === 'ru' ? 'ru' : 'en'; // default en
 
   // Apply initial theme to document root
   document.documentElement.setAttribute('data-theme', savedTheme);

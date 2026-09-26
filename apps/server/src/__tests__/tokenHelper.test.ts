@@ -8,9 +8,9 @@ import {
 
 describe('tokenHelper utility', () => {
   const userId = '654321654321654321654321';
-  const email = 'test@disk.uz';
+  const email = 'test@disk.com';
 
-  it('Access tokenni muvaffaqiyatli yaratadi va tekshiradi', () => {
+  it('Generates and verifies access token successfully', () => {
     const token = generateAccessToken(userId, email);
     expect(token).toBeDefined();
     expect(typeof token).toBe('string');
@@ -20,7 +20,7 @@ describe('tokenHelper utility', () => {
     expect(decoded.email).toBe(email);
   });
 
-  it('Refresh tokenni muvaffaqiyatli yaratadi va tekshiradi', () => {
+  it('Generates and verifies refresh token successfully', () => {
     const token = generateRefreshToken(userId, email);
     expect(token).toBeDefined();
 
@@ -29,7 +29,7 @@ describe('tokenHelper utility', () => {
     expect(decoded.email).toBe(email);
   });
 
-  it('Yaroqsiz tokenda xatolik chiqaradi', () => {
+  it('Throws error on invalid token', () => {
     expect(() => verifyAccessToken('invalid_token_string')).toThrow();
   });
 });

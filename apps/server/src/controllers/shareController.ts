@@ -8,14 +8,14 @@ export const shareItem = async (req: AuthRequest, res: Response): Promise<void> 
   const { type, id } = req.params as { type: 'file' | 'folder'; id: string };
   const { email, role } = req.body;
   const sharedWith = await ShareService.shareItem(req.user!.id, type, id, email, role);
-  sendSuccess(res, StatusCodes.OK, `${email} ga muvaffaqiyatli dostup berildi`, { sharedWith });
+  sendSuccess(res, StatusCodes.OK, `Access successfully granted to ${email}`, { sharedWith });
 };
 
 export const removeShare = async (req: AuthRequest, res: Response): Promise<void> => {
   const { type, id } = req.params as { type: 'file' | 'folder'; id: string };
   const { email } = req.body;
   const sharedWith = await ShareService.removeShare(req.user!.id, type, id, email);
-  sendSuccess(res, StatusCodes.OK, `${email} uchun dostup bekor qilindi`, { sharedWith });
+  sendSuccess(res, StatusCodes.OK, `Access removed for ${email}`, { sharedWith });
 };
 
 export const togglePublicLink = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -24,18 +24,18 @@ export const togglePublicLink = async (req: AuthRequest, res: Response): Promise
   sendSuccess(
     res,
     StatusCodes.OK,
-    result.isPublic ? 'Ommaviy havola yoqildi' : 'Ommaviy havola o\'chirildi',
+    result.isPublic ? 'Public link enabled' : 'Public link disabled',
     result
   );
 };
 
 export const getSharedWithMe = async (req: AuthRequest, res: Response): Promise<void> => {
   const result = await ShareService.getSharedWithMe(req.user!.email);
-  sendSuccess(res, StatusCodes.OK, 'Sizga ulashilgan elementlar', result);
+  sendSuccess(res, StatusCodes.OK, 'Items shared with you', result);
 };
 
 export const getPublicItem = async (req: AuthRequest, res: Response): Promise<void> => {
   const { token } = req.params;
   const file = await ShareService.getPublicItem(token);
-  sendSuccess(res, StatusCodes.OK, 'Ommaviy fayl ma\'lumoti', { file });
+  sendSuccess(res, StatusCodes.OK, 'Public file retrieved successfully', { file });
 };

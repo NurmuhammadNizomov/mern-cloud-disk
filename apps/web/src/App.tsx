@@ -37,7 +37,7 @@ export const App: React.FC = () => {
         style={{ minHeight: '100vh', background: '#f8fafc' }}
       >
         <button className="button is-loading is-large is-white" style={{ border: 'none' }}>
-          Yuklanmoqda...
+          Loading...
         </button>
       </div>
     );

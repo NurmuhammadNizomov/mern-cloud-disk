@@ -19,7 +19,7 @@ export const errorHandler = (
   next: NextFunction
 ): void => {
   const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-  const message = err.message || 'Serverda ichki xatolik yuz berdi';
+  const message = err.message || 'Internal server error';
 
   logger.error(`[${req.method}] ${req.originalUrl} - ${statusCode} - ${message}`, {
     stack: err.stack

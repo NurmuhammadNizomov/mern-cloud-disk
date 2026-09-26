@@ -28,7 +28,20 @@ export const Sidebar: React.FC = () => {
   const { t } = useSettingsStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Click outside to close + New dropdown
+  React.useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -39,11 +52,11 @@ export const Sidebar: React.FC = () => {
   };
 
   const navItems: Array<{ id: NavSection; label: string; icon: React.ReactNode }> = [
-    { id: 'my-drive', label: t.myDrive, icon: <HardDrive size={19} /> },
-    { id: 'media', label: t.media, icon: <ImageIcon size={19} /> },
-    { id: 'shared', label: t.shared, icon: <Users size={19} /> },
-    { id: 'starred', label: t.starred, icon: <Star size={19} /> },
-    { id: 'trash', label: t.trash, icon: <Trash2 size={19} /> }
+    { id: 'my-drive', label: t.myDrive, icon: <HardDrive size={18} /> },
+    { id: 'media', label: t.media, icon: <ImageIcon size={18} /> },
+    { id: 'shared', label: t.shared, icon: <Users size={18} /> },
+    { id: 'starred', label: t.starred, icon: <Star size={18} /> },
+    { id: 'trash', label: t.trash, icon: <Trash2 size={18} /> }
   ];
 
   const usedBytes = user?.storageUsed || 0;
@@ -56,6 +69,7 @@ export const Sidebar: React.FC = () => {
     <aside className="main-sidebar">
       {/* Hidden file input */}
       <input
+        id="global-file-input"
         type="file"
         multiple
         ref={fileInputRef}
@@ -63,115 +77,90 @@ export const Sidebar: React.FC = () => {
         style={{ display: 'none' }}
       />
 
-      {/* Main "+ New" Button (Google & Yandex style) */}
-      <div className={`dropdown mb-5 ${dropdownOpen ? 'is-active' : ''}`} style={{ width: '100%' }}>
+      {/* "+ New" Action Button with Dropdown */}
+      <div ref={dropdownRef} className={`dropdown mb-3 ${dropdownOpen ? 'is-active' : ''}`} style={{ width: '100%' }}>
         <div className="dropdown-trigger" style={{ width: '100%' }}>
           <button
-            className="button is-primary is-fullwidth"
+            type="button"
+            className="new-action-btn"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            style={{
-              height: '48px',
-              borderRadius: '24px',
-              fontWeight: 600,
-              fontSize: '0.95rem',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem'
-            }}
           >
-            <Plus size={20} />
+            <Plus size={20} className="new-action-icon" />
             <span>{t.addNew}</span>
           </button>
         </div>
         <div className="dropdown-menu" style={{ width: '100%' }} role="menu">
-          <div className="dropdown-content p-2" style={{ borderRadius: '14px', boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }}>
+          <div className="dropdown-content">
             <a
-              className="dropdown-item is-flex is-align-items-center py-2"
+              className="dropdown-item is-flex is-align-items-center"
               onClick={() => {
                 setDropdownOpen(false);
                 fileInputRef.current?.click();
               }}
-              style={{ borderRadius: '8px', gap: '0.75rem', fontWeight: 500 }}
+              style={{ gap: '10px' }}
             >
-              <UploadCloud size={18} className="has-text-info" />
+              <UploadCloud size={17} className="has-text-info" />
               <span>{t.uploadFiles}</span>
             </a>
             <a
-              className="dropdown-item is-flex is-align-items-center py-2"
+              className="dropdown-item is-flex is-align-items-center"
               onClick={() => {
                 setDropdownOpen(false);
                 setCreateFolderOpen(true);
               }}
-              style={{ borderRadius: '8px', gap: '0.75rem', fontWeight: 500 }}
+              style={{ gap: '10px' }}
             >
-              <FolderPlus size={18} className="has-text-warning" />
+              <FolderPlus size={17} className="has-text-warning" />
               <span>{t.newFolder}</span>
             </a>
           </div>
         </div>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="menu" style={{ flex: 1 }}>
-        <p className="menu-label has-text-grey-light" style={{ fontSize: '0.725rem', letterSpacing: '0.5px' }}>
-          NAVIGATION
-        </p>
-        <ul className="menu-list">
-          {navItems.map((item) => {
-            const isActive = activeSection === item.id;
-            return (
-              <li key={item.id} className="mb-1">
-                <a
-                  onClick={() => {
-                    setActiveSection(item.id);
-                    if (item.id === 'my-drive') {
-                      setCurrentFolderId(null);
-                    }
-                  }}
-                  className={`is-flex is-align-items-center py-2 px-3 ${
-                    isActive ? 'is-active has-background-info-light has-text-info has-text-weight-semibold' : 'has-text-dark'
-                  }`}
-                  style={{
-                    borderRadius: '10px',
-                    gap: '0.75rem',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <span style={{ color: isActive ? '#2563eb' : 'inherit' }}>{item.icon}</span>
-                  <span style={{ fontSize: '0.9rem' }}>{item.label}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      {/* Navigation Section */}
+      <div className="nav-section-title">NAVIGATION</div>
 
-      {/* Storage Indicator */}
-      <div
-        className="p-3 mt-auto"
-        style={{
-          background: 'var(--card-bg)',
-          borderRadius: '12px',
-          border: '1px solid var(--border-color)'
-        }}
-      >
-        <div className="is-flex is-align-items-center mb-2" style={{ gap: '0.5rem' }}>
-          <Database size={16} className="has-text-info" />
-          <span style={{ fontSize: '0.825rem', fontWeight: 600 }}>
-            {t.cloudStorage}
+      <ul className="sidebar-nav-list">
+        {navItems.map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <li key={item.id}>
+              <a
+                onClick={() => {
+                  setActiveSection(item.id);
+                  if (item.id === 'my-drive') {
+                    setCurrentFolderId(null);
+                  }
+                }}
+                className={`sidebar-nav-item ${isActive ? 'is-active' : ''}`}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span>{item.label}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Storage Indicator Card */}
+      <div className="storage-card">
+        <div className="is-flex is-align-items-center is-justify-content-space-between">
+          <div className="is-flex is-align-items-center" style={{ gap: '8px' }}>
+            <Database size={15} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>
+              {t.cloudStorage}
+            </span>
+          </div>
+          <span style={{ fontSize: '0.725rem', color: 'var(--text-faint)', fontWeight: 600 }}>
+            {percent}%
           </span>
         </div>
-        <progress
-          className="progress is-info is-small mb-2"
-          value={percent}
-          max="100"
-          style={{ height: '7px' }}
-        >
-          {percent}%
-        </progress>
-        <div className="is-flex is-justify-content-space-between is-size-7 has-text-grey">
+
+        <div className="storage-progress-bar">
+          <div className="storage-progress-fill" style={{ width: `${Math.max(percent, 2)}%` }} />
+        </div>
+
+        <div className="is-flex is-justify-content-space-between is-size-7" style={{ color: 'var(--text-muted)' }}>
           <span>{Number(usedGB) > 0.1 ? `${usedGB} GB` : `${usedMB} MB`}</span>
           <span>{t.storageLimit}</span>
         </div>

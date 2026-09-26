@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import dayjs from 'dayjs';
 
 export interface StandardApiResponse<T = any> {
   success: boolean;
@@ -21,7 +22,7 @@ export const sendSuccess = <T>(
     statusCode,
     message,
     ...(data !== undefined ? { data } : {}),
-    timestamp: new Date().toISOString()
+    timestamp: dayjs().toISOString()
   };
   return res.status(statusCode).json(response);
 };
@@ -37,7 +38,7 @@ export const sendError = (
     statusCode,
     message,
     ...(error !== undefined ? { error } : {}),
-    timestamp: new Date().toISOString()
+    timestamp: dayjs().toISOString()
   };
   return res.status(statusCode).json(response);
 };

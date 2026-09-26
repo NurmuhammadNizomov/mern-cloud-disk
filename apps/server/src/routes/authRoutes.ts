@@ -11,16 +11,26 @@ import {
   getMe
 } from '../controllers/authController';
 import { requireAuth } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import {
+  registerSchema,
+  loginSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+  refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema
+} from '../validations/authValidation';
 
 const router = Router();
 
-router.post('/register', register);
-router.post('/verify-email', verifyEmail);
-router.post('/resend-verification', resendVerification);
-router.post('/login', login);
-router.post('/refresh-token', refreshToken);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/register', validateBody(registerSchema), register);
+router.post('/verify-email', validateBody(verifyEmailSchema), verifyEmail);
+router.post('/resend-verification', validateBody(resendVerificationSchema), resendVerification);
+router.post('/login', validateBody(loginSchema), login);
+router.post('/refresh-token', validateBody(refreshTokenSchema), refreshToken);
+router.post('/forgot-password', validateBody(forgotPasswordSchema), forgotPassword);
+router.post('/reset-password', validateBody(resetPasswordSchema), resetPassword);
 
 // Protected routes
 router.post('/logout', requireAuth, logout);

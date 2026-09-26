@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Folder as FolderIcon,
   FolderOpen,
-  MoreVertical,
   Star,
-  Trash2,
-  Edit2,
+  MoreVertical,
   Share2,
+  Edit2,
+  Trash2,
   RotateCcw,
   Check
 } from 'lucide-react';
@@ -14,12 +14,13 @@ import { Folder } from '../types';
 import { useDriveStore } from '../store/useDriveStore';
 import { useDriveOperations } from '../hooks/useDriveOperations';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { fmtDate } from '../utils/date';
 
-interface FolderCardProps {
+interface FolderTableRowProps {
   folder: Folder;
 }
 
-export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
+export const FolderTableRow: React.FC<FolderTableRowProps> = ({ folder }) => {
   const {
     setCurrentFolderId,
     setShareModalItem,
@@ -37,15 +38,15 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
   const { t } = useSettingsStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLTableRowElement>(null);
   const isTrash = activeSection === 'trash';
   const isSelected = selectedIds.includes(folder._id);
 
-  // Click outside listener to automatically close dropdown
+  // Click outside to close menu
   useEffect(() => {
     if (!menuOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+      if (rowRef.current && !rowRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
@@ -62,59 +63,30 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
   const folderColor = folder.color || '#3b82f6';
 
   return (
-    <div
-      ref={cardRef}
-      className={`drive-card folder-card mb-3 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''}`}
+    <tr
+      ref={rowRef}
+      style={{ cursor: 'pointer' }}
       onClick={handleOpenFolder}
       onDoubleClick={handleOpenFolder}
-      style={{
-        zIndex: menuOpen ? 1000 : undefined
-      }}
+      className={`is-hoverable ${isSelected ? 'table-row-selected' : ''}`}
     >
-      {/* Checkbox ("galochka") for multi-selection */}
-      <div
-        className={`card-checkbox ${isSelected ? 'is-checked' : ''}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleSelectItem(folder._id);
-        }}
-        title="Select"
-      >
-        {isSelected && <Check size={12} strokeWidth={3} />}
-      </div>
-
-      <div className="is-flex is-align-items-center" style={{ gap: '12px', overflow: 'hidden', flex: 1, minWidth: 0 }}>
+      {/* Checkbox column */}
+      <td style={{ width: '40px', verticalAlign: 'middle' }}>
         <div
-          style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
-            background: `${folderColor}15`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: folderColor,
-            flexShrink: 0
+          className={`card-checkbox ${isSelected ? 'is-checked' : ''}`}
+          style={{ opacity: isSelected ? 1 : undefined }}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSelectItem(folder._id);
           }}
+          title="Select"
         >
-          <FolderIcon size={20} fill={folderColor} fillOpacity={0.25} />
+          {isSelected && <Check size={12} strokeWidth={3} />}
         </div>
-        <span
-          className="has-text-weight-semibold is-size-6"
-          style={{
-            maxWidth: '180px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            color: 'var(--text-main)'
-          }}
-          title={folder.name}
-        >
-          {folder.name}
-        </span>
-      </div>
+      </td>
 
-      <div className="is-flex is-align-items-center" style={{ gap: '4px' }}>
+      {/* Star column */}
+      <td style={{ width: '40px', verticalAlign: 'middle' }}>
         {!isTrash && (
           <button
             type="button"
@@ -133,7 +105,30 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
             />
           </button>
         )}
+      </td>
 
+      {/* Folder Name & Icon */}
+      <td style={{ verticalAlign: 'middle' }}>
+        <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
+          <FolderIcon size={18} fill={folderColor} fillOpacity={0.25} style={{ color: folderColor }} />
+          <span className="has-text-weight-semibold is-size-6" style={{ color: 'var(--text-main)' }}>
+            {folder.name}
+          </span>
+        </div>
+      </td>
+
+      {/* Date */}
+      <td style={{ verticalAlign: 'middle', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+        {fmtDate(folder.createdAt)}
+      </td>
+
+      {/* Size (folders show —) */}
+      <td style={{ verticalAlign: 'middle', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+        —
+      </td>
+
+      {/* Actions */}
+      <td style={{ verticalAlign: 'middle', textAlign: 'right' }}>
         <div className={`dropdown is-right ${menuOpen ? 'is-active' : ''}`}>
           <div className="dropdown-trigger">
             <button
@@ -234,7 +229,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder }) => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };

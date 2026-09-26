@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
   UploadCloud,
-  CheckCircle,
+  CheckCircle2,
   AlertCircle,
   ChevronDown,
   ChevronUp,
   X,
-  File
+  FileText,
+  Clock
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
+import { useSettingsStore } from '../store/useSettingsStore';
 
 export const UploadManager: React.FC = () => {
   const {
@@ -19,6 +21,7 @@ export const UploadManager: React.FC = () => {
     closeUploadWidget,
     clearCompletedUploads
   } = useDriveStore();
+  const { t } = useSettingsStore();
 
   const [minimized, setMinimized] = useState(false);
 
@@ -34,100 +37,126 @@ export const UploadManager: React.FC = () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const headerTitle = isUploading
+    ? `${t.uploadingStatus}... ${overallUploadPercent}% (${completedCount}/${totalCount})`
+    : `${completedCount} of ${totalCount} ${t.uploadCompleted}`;
+
   return (
-    <div className="upload-floating-widget">
-      {/* Widget Header (Google & Yandex Disk style) */}
+    <div className={`upload-floating-widget ${minimized ? 'minimized' : ''}`}>
+      {/* Widget Header */}
       <div className="upload-header">
-        <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-          <UploadCloud size={18} />
-          <span>
-            {isUploading
-              ? `Yuklanmoqda: ${overallUploadPercent}% (${completedCount}/${totalCount})`
-              : `${completedCount} ta fayl muvaffaqiyatli yuklandi`}
+        <div className="is-flex is-align-items-center" style={{ gap: '8px', minWidth: 0 }}>
+          <UploadCloud size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          <span
+            style={{
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+          >
+            {headerTitle}
           </span>
         </div>
-        <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+        <div className="is-flex is-align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
           <button
-            className="button is-small is-ghost p-1 has-text-white"
+            type="button"
+            className="upload-control-btn"
             onClick={() => setMinimized(!minimized)}
+            title={minimized ? 'Expand' : 'Minimize'}
           >
-            {minimized ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {minimized ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
           {!isUploading && (
             <button
-              className="button is-small is-ghost p-1 has-text-white"
+              type="button"
+              className="upload-control-btn"
               onClick={closeUploadWidget}
+              title="Close"
             >
-              <X size={16} />
+              <X size={15} />
             </button>
           )}
         </div>
       </div>
 
-      {/* Progress Bar (Bulma progress) */}
+      {/* Real-time Progress Bar */}
       {isUploading && (
-        <progress
-          className="progress is-primary is-small mb-0"
-          value={overallUploadPercent}
-          max="100"
-          style={{ height: '5px', borderRadius: 0 }}
-        >
-          {overallUploadPercent}%
-        </progress>
+        <div className="upload-progress-container">
+          <div
+            className="upload-progress-bar"
+            style={{ width: `${overallUploadPercent}%` }}
+          />
+        </div>
       )}
 
       {/* Upload Item Details */}
       {!minimized && (
         <div className="upload-body">
-          {uploadQueue.map((item) => (
-            <div key={item.id} className="upload-item-row">
-              <File size={16} className="has-text-grey" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  className="mb-0 has-text-weight-medium"
-                  style={{
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    fontSize: '0.825rem'
-                  }}
-                  title={item.file.name}
-                >
-                  {item.file.name}
-                </p>
-                <span className="has-text-grey is-size-7">
-                  {formatFileSize(item.file.size)}
-                  {item.status === 'uploading' && ` · ${item.progress}%`}
-                </span>
-              </div>
-              <div>
-                {item.status === 'completed' && (
-                  <CheckCircle size={18} className="has-text-success" />
-                )}
-                {item.status === 'uploading' && (
-                  <span className="tag is-info is-light is-rounded is-small">
-                    {item.progress}%
+          <div className="upload-items-list">
+            {uploadQueue.map((item) => (
+              <div key={item.id} className="upload-item-row">
+                <FileText size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    className="mb-0"
+                    style={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      fontSize: '0.825rem',
+                      fontWeight: 500,
+                      color: 'var(--text-main)'
+                    }}
+                    title={item.file.name}
+                  >
+                    {item.file.name}
+                  </p>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                    {formatFileSize(item.file.size)}
+                    {item.status === 'uploading' && ` · ${item.progress}%`}
                   </span>
-                )}
-                {item.status === 'pending' && (
-                  <span className="tag is-light is-rounded is-small">Kutilmoqda</span>
-                )}
-                {item.status === 'error' && (
-                  <span title={item.errorMsg || 'Xatolik'}>
-                    <AlertCircle size={18} className="has-text-danger" />
-                  </span>
-                )}
+                </div>
+                <div style={{ flexShrink: 0 }}>
+                  {item.status === 'completed' && (
+                    <CheckCircle2 size={17} style={{ color: 'var(--color-green)' }} />
+                  )}
+                  {item.status === 'uploading' && (
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: 'var(--primary)',
+                        background: 'rgba(37, 99, 235, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: '6px'
+                      }}
+                    >
+                      {item.progress}%
+                    </span>
+                  )}
+                  {item.status === 'pending' && (
+                    <Clock size={16} style={{ color: 'var(--text-muted)' }} />
+                  )}
+                  {item.status === 'error' && (
+                    <span title={item.errorMsg || 'Upload error'}>
+                      <AlertCircle size={17} style={{ color: '#ef4444' }} />
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           {!isUploading && completedCount > 0 && (
-            <div className="pt-2 text-right">
+            <div className="upload-footer">
               <button
-                className="button is-small is-ghost is-fullwidth has-text-grey"
+                type="button"
+                className="upload-clear-btn"
                 onClick={clearCompletedUploads}
               >
-                Tugallanganlarni tozalash
+                {t.clearCompleted}
               </button>
             </div>
           )}

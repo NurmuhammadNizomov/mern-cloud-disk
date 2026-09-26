@@ -1,18 +1,18 @@
 import React from 'react';
 import {
-  X,
   Download,
   Share2,
   FileText,
-  Video,
   Music,
   Archive,
   File as GenericFileIcon
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
+import { useSettingsStore } from '../store/useSettingsStore';
 
 export const FilePreviewModal: React.FC = () => {
   const { previewFile, setPreviewFile, setShareModalItem } = useDriveStore();
+  const { t } = useSettingsStore();
 
   if (!previewFile) return null;
 
@@ -24,52 +24,56 @@ export const FilePreviewModal: React.FC = () => {
 
   return (
     <div className="modal is-active">
-      <div className="modal-background" onClick={() => setPreviewFile(null)} style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(5px)' }} />
-      <div className="modal-card" style={{ maxWidth: '850px', width: '90vw', maxHeight: '90vh' }}>
+      <div className="modal-background" onClick={() => setPreviewFile(null)} style={{ background: 'rgba(9, 13, 22, 0.85)', backdropFilter: 'blur(6px)' }} />
+      <div className="modal-card" style={{ maxWidth: '850px', width: '92vw', maxHeight: '92vh' }}>
         {/* Header */}
-        <header className="modal-card-head" style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-          <div className="is-flex is-align-items-center" style={{ gap: '0.75rem', overflow: 'hidden' }}>
-            <span className="tag is-info is-light is-rounded has-text-weight-bold" style={{ textTransform: 'uppercase' }}>
+        <header className="modal-card-head">
+          <div className="is-flex is-align-items-center" style={{ gap: '10px', overflow: 'hidden' }}>
+            <span
+              className="tag is-info is-light is-rounded has-text-weight-bold"
+              style={{ textTransform: 'uppercase', fontSize: '0.7rem' }}
+            >
               {previewFile.extension || 'file'}
             </span>
             <p
-              className="modal-card-title is-size-6 has-text-weight-bold mb-0"
+              className="modal-card-title is-size-6"
               style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
             >
               {previewFile.name}
             </p>
           </div>
 
-          <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+          <div className="is-flex is-align-items-center" style={{ gap: '8px' }}>
             <a
               className="button is-small is-light"
               href={previewFile.cloudinaryUrl}
               target="_blank"
               rel="noopener noreferrer"
               download={previewFile.name}
-              style={{ borderRadius: '8px', gap: '0.35rem' }}
+              style={{ borderRadius: '8px', gap: '6px' }}
             >
-              <Download size={15} />
-              <span>Yuklab olish</span>
+              <Download size={14} />
+              <span>{t.download}</span>
             </a>
             <button
-              className="button is-small is-info is-light"
+              type="button"
+              className="button is-small is-primary is-light"
               onClick={() => {
                 setShareModalItem({ type: 'file', item: previewFile });
               }}
-              style={{ borderRadius: '8px', gap: '0.35rem' }}
+              style={{ borderRadius: '8px', gap: '6px' }}
             >
-              <Share2 size={15} />
-              <span>Dostup</span>
+              <Share2 size={14} />
+              <span>{t.share}</span>
             </button>
-            <button className="delete" aria-label="close" onClick={() => setPreviewFile(null)} />
+            <button type="button" className="delete" aria-label="close" onClick={() => setPreviewFile(null)} />
           </div>
         </header>
 
         {/* Media Preview Body */}
         <section
           className="modal-card-body p-0 is-flex is-align-items-center is-justify-content-center"
-          style={{ backgroundColor: '#0f172a', minHeight: '380px' }}
+          style={{ backgroundColor: '#090d16', minHeight: '380px' }}
         >
           {previewFile.category === 'image' && (
             <img
@@ -86,7 +90,7 @@ export const FilePreviewModal: React.FC = () => {
               style={{ maxHeight: '65vh', maxWidth: '100%' }}
               src={previewFile.cloudinaryUrl}
             >
-              Brauzeringiz ushbu videoni qo'llab-quvvatlamaydi.
+              Your browser does not support video playback.
             </video>
           )}
 
@@ -95,7 +99,7 @@ export const FilePreviewModal: React.FC = () => {
               <Music size={54} className="has-text-warning mb-4" />
               <p className="has-text-weight-bold is-size-5 mb-4">{previewFile.name}</p>
               <audio controls style={{ width: '100%' }} src={previewFile.cloudinaryUrl}>
-                Brauzeringiz ushbu audioni qo'llab-quvvatlamaydi.
+                Your browser does not support audio playback.
               </audio>
             </div>
           )}
@@ -111,7 +115,7 @@ export const FilePreviewModal: React.FC = () => {
               )}
               <h3 className="is-size-5 has-text-weight-bold mb-2">{previewFile.name}</h3>
               <p className="has-text-grey-light is-size-7 mb-4">
-                Hajmi: {formatFileSize(previewFile.size)} · Turi: {previewFile.mimeType}
+                {previewFile.mimeType} · {formatFileSize(previewFile.size)}
               </p>
               <a
                 href={previewFile.cloudinaryUrl}
@@ -122,7 +126,7 @@ export const FilePreviewModal: React.FC = () => {
                 style={{ borderRadius: '8px', fontWeight: 600 }}
               >
                 <Download size={16} className="mr-2" />
-                Faylni yuklab olish
+                {t.download}
               </a>
             </div>
           )}

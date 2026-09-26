@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import { FolderPlus, X } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useDriveOperations } from '../hooks/useDriveOperations';
+import { useSettingsStore } from '../store/useSettingsStore';
 
 const FOLDER_COLORS = [
-  '#4285F4', // Blue (Google Drive)
-  '#EA4335', // Red
-  '#FBBC05', // Yellow
-  '#34A853', // Green
-  '#8B5CF6', // Purple
-  '#EC4899', // Pink
-  '#06B6D4'  // Cyan
+  '#2563eb', // Royal Blue
+  '#dc2626', // Red
+  '#f59e0b', // Amber/Yellow
+  '#16a34a', // Green
+  '#7c3aed', // Violet
+  '#db2777', // Pink
+  '#0891b2'  // Cyan
 ];
 
 export const CreateFolderModal: React.FC = () => {
   const { createFolderOpen, setCreateFolderOpen } = useDriveStore();
   const { createFolder } = useDriveOperations();
+  const { t } = useSettingsStore();
 
   const [folderName, setFolderName] = useState('');
   const [selectedColor, setSelectedColor] = useState(FOLDER_COLORS[0]);
@@ -41,14 +43,15 @@ export const CreateFolderModal: React.FC = () => {
 
   return (
     <div className="modal is-active">
-      <div className="modal-background" onClick={() => setCreateFolderOpen(false)} />
+      <div className="modal-background" onClick={() => setCreateFolderOpen(false)} style={{ backdropFilter: 'blur(4px)' }} />
       <div className="modal-card" style={{ maxWidth: '440px' }}>
-        <header className="modal-card-head" style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-          <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-            <FolderPlus size={20} className="has-text-warning" />
-            <p className="modal-card-title is-size-5 has-text-weight-bold mb-0">Yangi papka ochish</p>
+        <header className="modal-card-head">
+          <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
+            <FolderPlus size={20} style={{ color: 'var(--primary)' }} />
+            <p className="modal-card-title">{t.createFolderTitle}</p>
           </div>
           <button
+            type="button"
             className="delete"
             aria-label="close"
             onClick={() => setCreateFolderOpen(false)}
@@ -56,37 +59,36 @@ export const CreateFolderModal: React.FC = () => {
         </header>
 
         <form onSubmit={handleSubmit}>
-          <section className="modal-card-body" style={{ backgroundColor: '#ffffff' }}>
+          <section className="modal-card-body">
             <div className="field mb-4">
-              <label className="label is-size-7 has-text-grey">PAPKA NOMI</label>
+              <label className="label">{t.folderNameLabel}</label>
               <div className="control">
                 <input
                   className="input"
                   type="text"
-                  placeholder="Masalan: Shartnomalar 2026"
+                  placeholder={t.folderPlaceholder}
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
                   autoFocus
                   required
-                  style={{ borderRadius: '8px' }}
                 />
               </div>
             </div>
 
             <div className="field mb-2">
-              <label className="label is-size-7 has-text-grey">PAPKA RANGI</label>
-              <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
+              <label className="label">{t.folderColorLabel}</label>
+              <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
                 {FOLDER_COLORS.map((color) => (
                   <div
                     key={color}
                     onClick={() => setSelectedColor(color)}
                     style={{
-                      width: '28px',
-                      height: '28px',
+                      width: '30px',
+                      height: '30px',
                       borderRadius: '50%',
                       backgroundColor: color,
                       cursor: 'pointer',
-                      border: selectedColor === color ? '3px solid #1e293b' : '2px solid transparent',
+                      border: selectedColor === color ? '3px solid var(--text-main)' : '2px solid transparent',
                       transform: selectedColor === color ? 'scale(1.15)' : 'scale(1)',
                       transition: 'all 0.15s ease'
                     }}
@@ -96,14 +98,14 @@ export const CreateFolderModal: React.FC = () => {
             </div>
           </section>
 
-          <footer className="modal-card-foot is-justify-content-flex-end" style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+          <footer className="modal-card-foot is-justify-content-flex-end">
             <button
               type="button"
               className="button is-light mr-2"
               onClick={() => setCreateFolderOpen(false)}
               style={{ borderRadius: '8px' }}
             >
-              Bekor qilish
+              {t.cancel}
             </button>
             <button
               type="submit"
@@ -111,7 +113,7 @@ export const CreateFolderModal: React.FC = () => {
               disabled={!folderName.trim() || submitting}
               style={{ borderRadius: '8px', fontWeight: 600 }}
             >
-              Yaratish
+              {t.create}
             </button>
           </footer>
         </form>

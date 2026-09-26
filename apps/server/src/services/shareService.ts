@@ -13,7 +13,7 @@ export class ShareService {
       : await File.findOne({ _id: id, owner: userId });
 
     if (!item) {
-      throw new AppError(`${type === 'folder' ? 'Papka' : 'Fayl'} topilmadi`, StatusCodes.NOT_FOUND);
+      throw new AppError(`${type === 'folder' ? 'Folder' : 'File'} not found`, StatusCodes.NOT_FOUND);
     }
 
     const targetUser = await User.findOne({ email: cleanEmail });
@@ -41,7 +41,7 @@ export class ShareService {
       : await File.findOne({ _id: id, owner: userId });
 
     if (!item) {
-      throw new AppError('Element topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Item not found', StatusCodes.NOT_FOUND);
     }
 
     item.sharedWith = item.sharedWith.filter((s: any) => s.email !== cleanEmail);
@@ -52,7 +52,7 @@ export class ShareService {
   static async togglePublicLink(userId: string, fileId: string) {
     const file = await File.findOne({ _id: fileId, owner: userId });
     if (!file) {
-      throw new AppError('Fayl topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('File not found', StatusCodes.NOT_FOUND);
     }
 
     file.isPublic = !file.isPublic;
@@ -86,7 +86,7 @@ export class ShareService {
   static async getPublicItem(token: string) {
     const file = await File.findOne({ shareToken: token, isPublic: true }).populate('owner', 'name email');
     if (!file) {
-      throw new AppError('Havola yaroqsiz yoki ommaviy dostup yopilgan', StatusCodes.NOT_FOUND);
+      throw new AppError('Link is invalid or public access is disabled', StatusCodes.NOT_FOUND);
     }
     return file;
   }

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { getCategoryFromMimeAndExt, formatBytes, sanitizeFileName } from '../utils/fileHelper';
 
 describe('fileHelper utility', () => {
-  it('to\'g\'ri kategoriyani aniqlaydi (Image, Video, Audio, Document, Archive)', () => {
+  it('Correctly detects file category (Image, Video, Audio, Document, Archive)', () => {
     expect(getCategoryFromMimeAndExt('image/jpeg', 'jpg')).toBe('image');
     expect(getCategoryFromMimeAndExt('image/png', 'png')).toBe('image');
     expect(getCategoryFromMimeAndExt('video/mp4', 'mp4')).toBe('video');
@@ -12,14 +12,14 @@ describe('fileHelper utility', () => {
     expect(getCategoryFromMimeAndExt('application/octet-stream', 'xyz')).toBe('other');
   });
 
-  it('baytlarni inson o\'qiy oladigan formatga o\'tkazadi (formatBytes)', () => {
+  it('Converts bytes to human readable format (formatBytes)', () => {
     expect(formatBytes(0)).toBe('0 B');
     expect(formatBytes(1024)).toBe('1 KB');
     expect(formatBytes(1024 * 1024)).toBe('1 MB');
     expect(formatBytes(1024 * 1024 * 1024)).toBe('1 GB');
   });
 
-  it('fayl nomidagi xavfli belgilarni tozalaydi (sanitizeFileName)', () => {
+  it('Sanitizes dangerous characters in file name (sanitizeFileName)', () => {
     expect(sanitizeFileName('my file (test)!.pdf')).toBe('my_file__test__');
     expect(sanitizeFileName('presentation#2026.pptx')).toBe('presentation_2026');
   });

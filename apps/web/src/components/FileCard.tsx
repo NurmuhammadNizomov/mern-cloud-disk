@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FileText,
   Image as ImageIcon,
@@ -13,12 +13,14 @@ import {
   Edit2,
   Trash2,
   Eye,
-  RotateCcw
+  RotateCcw,
+  Check
 } from 'lucide-react';
 import { FileItem } from '../types';
 import { useDriveStore } from '../store/useDriveStore';
 import { useDriveOperations } from '../hooks/useDriveOperations';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { fmtDate } from '../utils/date';
 
 interface FileCardProps {
   file: FileItem;
@@ -29,31 +31,35 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
     activeSection,
     setShareModalItem,
     setRenameModalItem,
-    setPreviewFile
+    setPreviewFile,
+    selectedIds,
+    toggleSelectItem
   } = useDriveStore();
-  const {
-    toggleStarFile,
-    trashFile,
-    restoreFile,
-    deleteFilePermanently
-  } = useDriveOperations();
+  const { toggleStarFile, trashFile, restoreFile, deleteFilePermanently } = useDriveOperations();
   const { t } = useSettingsStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const isTrash = activeSection === 'trash';
+  const isSelected = selectedIds.includes(file._id);
+
+  // Click outside listener
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const formatFileSize = (bytes: number): string => {
+    if (!bytes) return '';
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  const formatDate = (dateString: string): string => {
-    const d = new Date(dateString);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}.${month}.${year}`;
   };
 
   const getFileCategoryIcon = () => {
@@ -75,12 +81,35 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
 
   return (
     <div
-      className="drive-card mb-4"
+      ref={cardRef}
+      className={`drive-card mb-4 ${menuOpen ? 'menu-active' : ''} ${isSelected ? 'selected' : ''}`}
       onClick={() => !isTrash && setPreviewFile(file)}
-      style={{ overflow: 'hidden' }}
+      style={{
+        overflow: menuOpen ? 'visible' : 'hidden',
+        zIndex: menuOpen ? 1000 : undefined
+      }}
     >
       {/* File Preview Header */}
-      <div className="file-card-preview">
+      <div className="file-card-preview" style={{ position: 'relative' }}>
+        {/* Floating Checkbox ("galochka") */}
+        <div
+          className={`card-checkbox ${isSelected ? 'is-checked' : ''}`}
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            zIndex: 10,
+            opacity: isSelected ? 1 : undefined
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSelectItem(file._id);
+          }}
+          title="Select"
+        >
+          {isSelected && <Check size={12} strokeWidth={3} />}
+        </div>
+
         {file.category === 'image' && file.cloudinaryUrl ? (
           <img
             src={file.cloudinaryUrl}
@@ -105,20 +134,23 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
         {/* Floating Star button */}
         {!isTrash && (
           <button
-            className="button is-small is-white is-rounded p-1"
+            type="button"
+            className="button is-small is-rounded p-1"
             onClick={(e) => {
               e.stopPropagation();
               toggleStarFile(file._id);
             }}
+            title={file.isStarred ? t.unstar : t.star}
             style={{
               position: 'absolute',
               top: '8px',
               right: '8px',
               width: '28px',
               height: '28px',
-              background: 'rgba(255,255,255,0.85)',
+              backgroundColor: 'var(--bg-surface)',
               backdropFilter: 'blur(4px)',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+              boxShadow: 'var(--shadow-sm)',
+              zIndex: 10
             }}
           >
             <Star
@@ -139,7 +171,8 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
               maxWidth: '180px',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
-              textOverflow: 'ellipsis'
+              textOverflow: 'ellipsis',
+              color: 'var(--text-main)'
             }}
             title={file.name}
           >
@@ -149,17 +182,19 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
           <div className={`dropdown is-right ${menuOpen ? 'is-active' : ''}`}>
             <div className="dropdown-trigger">
               <button
+                type="button"
                 className="button is-small is-white p-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   setMenuOpen(!menuOpen);
                 }}
+                style={{ width: '28px', height: '28px', borderRadius: '6px' }}
               >
                 <MoreVertical size={16} className="has-text-grey" />
               </button>
             </div>
             <div className="dropdown-menu" role="menu">
-              <div className="dropdown-content p-1" style={{ borderRadius: '10px', boxShadow: '0 8px 20px rgba(0,0,0,0.12)' }}>
+              <div className="dropdown-content">
                 {!isTrash ? (
                   <>
                     <a
@@ -169,7 +204,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         setMenuOpen(false);
                         setPreviewFile(file);
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <Eye size={15} className="has-text-info" />
                       <span>{t.preview}</span>
@@ -184,7 +219,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         e.stopPropagation();
                         setMenuOpen(false);
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <Download size={15} className="has-text-success" />
                       <span>{t.download}</span>
@@ -196,7 +231,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         setMenuOpen(false);
                         setShareModalItem({ type: 'file', item: file });
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <Share2 size={15} className="has-text-info" />
                       <span>{t.share}</span>
@@ -208,12 +243,12 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         setMenuOpen(false);
                         setRenameModalItem({ type: 'file', id: file._id, currentName: file.name });
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <Edit2 size={15} className="has-text-grey" />
                       <span>{t.rename}</span>
                     </a>
-                    <hr className="dropdown-divider my-1" />
+                    <hr className="dropdown-divider" />
                     <a
                       className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
                       onClick={(e) => {
@@ -221,7 +256,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         setMenuOpen(false);
                         trashFile(file._id);
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <Trash2 size={15} />
                       <span>{t.delete}</span>
@@ -236,12 +271,12 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         setMenuOpen(false);
                         restoreFile(file._id);
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <RotateCcw size={15} />
                       <span>{t.restore}</span>
                     </a>
-                    <hr className="dropdown-divider my-1" />
+                    <hr className="dropdown-divider" />
                     <a
                       className="dropdown-item is-flex is-align-items-center py-2 has-text-danger"
                       onClick={(e) => {
@@ -249,7 +284,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
                         setMenuOpen(false);
                         deleteFilePermanently(file._id);
                       }}
-                      style={{ gap: '0.5rem', fontSize: '0.85rem' }}
+                      style={{ gap: '0.6rem' }}
                     >
                       <Trash2 size={15} />
                       <span>{t.deleteForever}</span>
@@ -263,7 +298,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file }) => {
 
         <div className="is-flex is-justify-content-space-between is-size-7 has-text-grey">
           <span>{formatFileSize(file.size)}</span>
-          <span>{formatDate(file.createdAt)}</span>
+          <span>{fmtDate(file.createdAt)}</span>
         </div>
       </div>
     </div>

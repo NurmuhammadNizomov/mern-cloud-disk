@@ -3,11 +3,6 @@ import {
   Download,
   HardDrive,
   FileText,
-  Image as ImageIcon,
-  Video,
-  Music,
-  Archive,
-  File as GenericFileIcon,
   AlertTriangle
 } from 'lucide-react';
 import { shareApi } from '../api/client';
@@ -29,7 +24,7 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
         const res = await shareApi.getPublicItem(token);
         setFile(res.file);
       } catch (err: any) {
-        setError(err?.response?.data?.message || 'Havola yaroqsiz yoki ommaviy dostup yopilgan');
+        setError(err?.response?.data?.message || 'Invalid link or public access has been disabled');
       } finally {
         setLoading(false);
       }
@@ -39,6 +34,7 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
   }, [token]);
 
   const formatFileSize = (bytes: number): string => {
+    if (!bytes) return '';
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -46,9 +42,12 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
 
   if (loading) {
     return (
-      <div className="is-flex is-align-items-center is-justify-content-center" style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <div
+        className="is-flex is-align-items-center is-justify-content-center"
+        style={{ minHeight: '100vh', background: 'var(--bg-canvas)' }}
+      >
         <button className="button is-loading is-large is-white" style={{ border: 'none' }}>
-          Yuklanmoqda...
+          Loading...
         </button>
       </div>
     );
@@ -56,13 +55,28 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
 
   if (error || !file) {
     return (
-      <div className="is-flex is-align-items-center is-justify-content-center p-4" style={{ minHeight: '100vh', background: '#f8fafc' }}>
-        <div className="card p-6 has-text-centered" style={{ maxWidth: '420px', borderRadius: '16px' }}>
+      <div
+        className="is-flex is-align-items-center is-justify-content-center p-4"
+        style={{ minHeight: '100vh', background: 'var(--bg-canvas)' }}
+      >
+        <div
+          className="card p-6 has-text-centered"
+          style={{
+            maxWidth: '420px',
+            borderRadius: '16px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)'
+          }}
+        >
           <AlertTriangle size={48} className="has-text-danger mb-3" />
-          <h3 className="is-size-5 has-text-weight-bold mb-2">Fayl topilmadi</h3>
-          <p className="has-text-grey is-size-7 mb-4">{error}</p>
+          <h3 className="is-size-5 has-text-weight-bold mb-2" style={{ color: 'var(--text-main)' }}>
+            File Not Found
+          </h3>
+          <p className="is-size-7 mb-4" style={{ color: 'var(--text-muted)' }}>
+            {error}
+          </p>
           <a href="/" className="button is-primary is-small" style={{ borderRadius: '8px' }}>
-            Bosh sahifaga qaytish
+            Back to Home
           </a>
         </div>
       </div>
@@ -70,26 +84,27 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-canvas)' }}>
       {/* Header */}
-      <header className="main-header">
+      <header className="main-header" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
           <div
             style={{
               width: '36px',
               height: '36px',
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #4285F4 0%, #34A853 50%, #FBBC05 100%)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#fff'
+              color: '#fff',
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
             }}
           >
             <HardDrive size={20} />
           </div>
-          <span style={{ fontWeight: 700, fontSize: '1.15rem', color: '#1e293b' }}>
-            Safar <span style={{ color: '#2563eb' }}>Disk</span>
+          <span style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--text-main)' }}>
+            Cloud <span style={{ color: 'var(--primary)' }}>Disk</span>
           </span>
         </div>
 
@@ -102,25 +117,36 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
           style={{ borderRadius: '8px', fontWeight: 600 }}
         >
           <Download size={16} className="mr-2" />
-          Yuklab olish
+          Download
         </a>
       </header>
 
       {/* Body preview */}
       <main className="p-5 is-flex is-justify-content-center">
-        <div className="card p-5" style={{ maxWidth: '800px', width: '100%', borderRadius: '18px', border: '1px solid #e2e8f0' }}>
+        <div
+          className="card p-5"
+          style={{
+            maxWidth: '800px',
+            width: '100%',
+            borderRadius: '18px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)'
+          }}
+        >
           <div className="is-flex is-align-items-center is-justify-content-space-between mb-4">
             <div>
-              <h2 className="is-size-4 has-text-weight-bold has-text-dark mb-1">{file.name}</h2>
-              <p className="has-text-grey is-size-7 mb-0">
-                Hajmi: {formatFileSize(file.size)} · Ulashuvchi: {(file.owner as any)?.name || 'Foydalanuvchi'}
+              <h2 className="is-size-4 has-text-weight-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                {file.name}
+              </h2>
+              <p className="is-size-7 mb-0" style={{ color: 'var(--text-muted)' }}>
+                Size: {formatFileSize(file.size)} · Shared by: {(file.owner as any)?.name || 'User'}
               </p>
             </div>
           </div>
 
           <div
             className="is-flex is-align-items-center is-justify-content-center p-4 mb-4"
-            style={{ background: '#0f172a', borderRadius: '12px', minHeight: '380px' }}
+            style={{ background: 'var(--bg-subtle)', borderRadius: '12px', minHeight: '380px' }}
           >
             {file.category === 'image' && (
               <img
@@ -131,19 +157,23 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
             )}
             {file.category === 'video' && (
               <video controls style={{ maxHeight: '60vh', maxWidth: '100%' }} src={file.cloudinaryUrl}>
-                Video ijro etib bo'lmadi.
+                Cannot play video.
               </video>
             )}
             {file.category === 'audio' && (
               <audio controls style={{ width: '80%' }} src={file.cloudinaryUrl}>
-                Audio ijro etib bo'lmadi.
+                Cannot play audio.
               </audio>
             )}
             {['document', 'archive', 'other'].includes(file.category) && (
-              <div className="has-text-centered has-text-white p-5">
+              <div className="has-text-centered p-5">
                 <FileText size={64} className="has-text-info mb-3" />
-                <p className="is-size-5 has-text-weight-semibold">{file.name}</p>
-                <p className="is-size-7 has-text-grey-light">{file.mimeType}</p>
+                <p className="is-size-5 has-text-weight-semibold" style={{ color: 'var(--text-main)' }}>
+                  {file.name}
+                </p>
+                <p className="is-size-7" style={{ color: 'var(--text-muted)' }}>
+                  {file.mimeType}
+                </p>
               </div>
             )}
           </div>
@@ -158,7 +188,7 @@ export const PublicSharePage: React.FC<PublicSharePageProps> = ({ token }) => {
               style={{ borderRadius: '10px', fontWeight: 600 }}
             >
               <Download size={18} className="mr-2" />
-              Faylni to'liq yuklab olish
+              Download File
             </a>
           </div>
         </div>

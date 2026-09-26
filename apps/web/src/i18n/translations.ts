@@ -1,9 +1,9 @@
-export type Language = 'en' | 'ru' | 'uz';
+export type Language = 'en' | 'ru';
 
 export const translations = {
   en: {
     // Brand
-    brandName: 'Safar Disk',
+    brandName: 'Cloud Disk',
     tagline: 'Cloud Storage',
     cloudMern: 'Cloud MERN',
 
@@ -18,6 +18,7 @@ export const translations = {
     used: 'used',
 
     // Buttons & Actions
+    open: 'Open',
     addNew: 'New',
     uploadFiles: 'Upload Files',
     newFolder: 'New Folder',
@@ -39,6 +40,11 @@ export const translations = {
     clearCompleted: 'Clear completed',
     dropFilesHere: 'Drop files here to upload',
     autoProgress: 'Files will be uploaded with real-time progress',
+    selectedCount: 'selected',
+    deselectAll: 'Deselect all',
+    deleteSelected: 'Delete selected',
+    restoreSelected: 'Restore selected',
+    deleteForeverSelected: 'Delete forever',
 
     // Filters & Sorting
     searchPlaceholder: 'Search files and folders in Disk...',
@@ -50,9 +56,9 @@ export const translations = {
     audio: 'Audio',
     archives: 'Archives',
     sortBy: 'Sort by',
-    sortByDate: 'By Date',
-    sortByName: 'By Name',
-    sortBySize: 'By Size',
+    sortByDate: 'Date',
+    sortByName: 'Name',
+    sortBySize: 'Size',
     ascending: 'Ascending',
     descending: 'Descending',
     foldersCount: 'folders',
@@ -60,7 +66,7 @@ export const translations = {
 
     // Table Headers
     name: 'NAME',
-    modifiedDate: 'DATE MODIFIED',
+    modifiedDate: 'LAST MODIFIED',
     size: 'SIZE',
     actions: 'ACTIONS',
 
@@ -68,12 +74,12 @@ export const translations = {
     emptyFolder: 'This folder is empty',
     emptyTrash: 'Trash is empty',
     emptyStarred: 'No starred items yet',
-    emptyShared: 'No files have been shared with you yet',
-    emptyDesc: 'Use the button above or drag and drop files here to upload',
-    trashDesc: 'Deleted items will appear here',
+    emptyShared: 'No items shared with you yet',
+    emptyDesc: 'Use the New button above or drag and drop files here to upload',
+    trashDesc: 'Deleted items are stored here',
 
     // Modals
-    createFolderTitle: 'Create New Folder',
+    createFolderTitle: 'New Folder',
     folderNameLabel: 'FOLDER NAME',
     folderColorLabel: 'FOLDER COLOR',
     folderPlaceholder: 'e.g. Work Documents 2026',
@@ -84,10 +90,10 @@ export const translations = {
     editor: 'Editor',
     addUserBtn: 'Add',
     sharedPeople: 'PEOPLE WITH ACCESS',
-    noOneShared: 'No individual access granted yet',
-    publicLinkTitle: 'General access via link',
-    publicLinkEnabled: 'Anyone with the link can view',
-    publicLinkDisabled: 'Restricted (Only added people can access)',
+    noOneShared: 'No direct access granted to others yet',
+    publicLinkTitle: 'Public Link Sharing',
+    publicLinkEnabled: 'Anyone with the link can view and download',
+    publicLinkDisabled: 'Public access is disabled',
     turnOn: 'Enable',
     turnOff: 'Enabled',
     renameTitle: 'Rename',
@@ -99,9 +105,9 @@ export const translations = {
     pending: 'Pending',
 
     // Auth
-    loginTitle: 'Sign in to Safar Disk',
-    loginSubtitle: 'Google & Yandex Disk Cloud Alternative',
-    registerTitle: 'Create an Account',
+    loginTitle: 'Sign in to Cloud Disk',
+    loginSubtitle: 'Modern Cloud Storage Solution',
+    registerTitle: 'Create your account',
     registerSubtitle: 'Get 15 GB of free cloud storage',
     emailLabel: 'EMAIL ADDRESS',
     passwordLabel: 'PASSWORD',
@@ -111,21 +117,20 @@ export const translations = {
     demoBtn: '1-Click Demo Login',
     noAccount: "Don't have an account?",
     haveAccount: 'Already have an account?',
-    verifyCodeTitle: 'Email Verification',
-    verifyCodeLabel: 'VERIFICATION CODE',
-    verifyCodePlaceholder: '6-digit code',
-    verifyBtn: 'Verify Code & Continue'
+    verifyCodeLabel: 'ENTER 6-DIGIT CODE',
+    verifyCodePlaceholder: '123456',
+    verifyBtn: 'Verify and Continue'
   },
   ru: {
     // Brand
-    brandName: 'Safar Диск',
+    brandName: 'Cloud Disk',
     tagline: 'Облачное хранилище',
     cloudMern: 'Cloud MERN',
 
     // Navigation
     myDrive: 'Мой диск',
-    media: 'Фото и медиа',
-    shared: 'Общий доступ',
+    media: 'Фото и Медиа',
+    shared: 'Доступные мне',
     starred: 'Избранное',
     trash: 'Корзина',
     cloudStorage: 'Облачное хранилище',
@@ -133,6 +138,7 @@ export const translations = {
     used: 'использовано',
 
     // Buttons & Actions
+    open: 'Открыть',
     addNew: 'Создать',
     uploadFiles: 'Загрузить файлы',
     newFolder: 'Новая папка',
@@ -142,7 +148,7 @@ export const translations = {
     download: 'Скачать',
     star: 'В избранное',
     unstar: 'Из избранного',
-    delete: 'Удалить в корзину',
+    delete: 'В корзину',
     restore: 'Восстановить',
     deleteForever: 'Удалить навсегда',
     cancel: 'Отмена',
@@ -153,13 +159,18 @@ export const translations = {
     logout: 'Выйти',
     clearCompleted: 'Очистить завершенные',
     dropFilesHere: 'Перетащите файлы сюда для загрузки',
-    autoProgress: 'Файлы будут загружены с отображением процентов',
+    autoProgress: 'Файлы загружаются с отображением прогресса',
+    selectedCount: 'выбрано',
+    deselectAll: 'Снять выбор',
+    deleteSelected: 'В корзину',
+    restoreSelected: 'Восстановить',
+    deleteForeverSelected: 'Удалить навсегда',
 
     // Filters & Sorting
     searchPlaceholder: 'Поиск файлов и папок на Диске...',
     searchResult: 'Поиск',
     all: 'Все',
-    images: 'Фотографии',
+    images: 'Изображения',
     documents: 'Документы',
     videos: 'Видео',
     audio: 'Аудио',
@@ -182,13 +193,13 @@ export const translations = {
     // Empty States
     emptyFolder: 'Эта папка пуста',
     emptyTrash: 'Корзина пуста',
-    emptyStarred: 'В избранном пока ничего нет',
-    emptyShared: 'С вами пока не делились файлами',
-    emptyDesc: 'Используйте кнопку выше или перетащите файлы для загрузки',
-    trashDesc: 'Удаленные элементы будут отображаться здесь',
+    emptyStarred: 'Нет избранных элементов',
+    emptyShared: 'Вам еще ничего не предоставили',
+    emptyDesc: 'Используйте кнопку Создать выше или перетащите файлы сюда',
+    trashDesc: 'Удаленные файлы хранятся здесь',
 
     // Modals
-    createFolderTitle: 'Создать новую папку',
+    createFolderTitle: 'Создать папку',
     folderNameLabel: 'ИМЯ ПАПКИ',
     folderColorLabel: 'ЦВЕТ ПАПКИ',
     folderPlaceholder: 'Например: Рабочие документы 2026',
@@ -199,10 +210,10 @@ export const translations = {
     editor: 'Редактор',
     addUserBtn: 'Добавить',
     sharedPeople: 'ПОЛЬЗОВАТЕЛИ С ДОСТУПОМ',
-    noOneShared: 'Пока никому не предоставлен доступ',
+    noOneShared: 'Прямой доступ еще никому не предоставлен',
     publicLinkTitle: 'Общий доступ по ссылке',
-    publicLinkEnabled: 'Доступно всем, у кого есть ссылка',
-    publicLinkDisabled: 'Доступ ограничен (только добавленные пользователи)',
+    publicLinkEnabled: 'Любой в интернете может просматривать и скачивать',
+    publicLinkDisabled: 'Доступ по ссылке отключен',
     turnOn: 'Включить',
     turnOff: 'Включено',
     renameTitle: 'Переименовать',
@@ -211,139 +222,23 @@ export const translations = {
     // Upload Widget
     uploadingStatus: 'Загрузка',
     uploadCompleted: 'файлов успешно загружено',
-    pending: 'Ожидание',
+    pending: 'В очереди',
 
     // Auth
-    loginTitle: 'Вход в Safar Диск',
-    loginSubtitle: 'Аналог Google Диска и Яндекс Диска',
+    loginTitle: 'Вход в Cloud Disk',
+    loginSubtitle: 'Современное облачное хранилище',
     registerTitle: 'Регистрация аккаунта',
-    registerSubtitle: 'Получите 15 ГБ бесплатного облачного хранилища',
+    registerSubtitle: 'Получите 15 ГБ бесплатного хранилища',
     emailLabel: 'EMAIL АДРЕС',
     passwordLabel: 'ПАРОЛЬ',
-    fullNameLabel: 'ИМЯ И ФАМИЛИЯ',
-    signInBtn: 'Войти в аккаунт',
+    fullNameLabel: 'ПОЛНОЕ ИМЯ',
+    signInBtn: 'Войти',
     signUpBtn: 'Зарегистрироваться',
-    demoBtn: 'Вход в Demo аккаунт (1 клик)',
+    demoBtn: 'Демо вход в 1 клик',
     noAccount: 'Нет аккаунта?',
     haveAccount: 'Уже есть аккаунт?',
-    verifyCodeTitle: 'Подтверждение почты',
-    verifyCodeLabel: 'КОД ПОДТВЕРЖДЕНИЯ',
-    verifyCodePlaceholder: '6-значный код',
-    verifyBtn: 'Подтвердить код и войти'
-  },
-  uz: {
-    // Brand
-    brandName: 'Safar Disk',
-    tagline: 'Bulutli Xotira',
-    cloudMern: 'Cloud MERN',
-
-    // Navigation
-    myDrive: 'Mening diskim',
-    media: 'Rasmlar & Media',
-    shared: 'Ulashilganlar',
-    starred: 'Tanlanganlar',
-    trash: 'Chiqindilar qutisi',
-    cloudStorage: 'Bulutli Xotira',
-    storageLimit: '15 GB limit',
-    used: 'ishlatildi',
-
-    // Buttons & Actions
-    addNew: 'Yangi',
-    uploadFiles: 'Fayllarni yuklash',
-    newFolder: 'Yangi papka',
-    rename: "Nomini o'zgartirish",
-    share: 'Dostup berish',
-    preview: "Ko'rish",
-    download: 'Yuklab olish',
-    star: 'Tanlanganlarga',
-    unstar: 'Tanlanganlardan olish',
-    delete: 'Chiqindilar qutisiga',
-    restore: 'Qayta tiklash',
-    deleteForever: "Butunlay o'chirish",
-    cancel: 'Bekor qilish',
-    save: 'Saqlash',
-    create: 'Yaratish',
-    copyLink: 'Havolani nusxalash',
-    copied: 'Nusxalandi!',
-    logout: 'Chiqish',
-    clearCompleted: 'Tugallanganlarni tozalash',
-    dropFilesHere: 'Fayllarni bu yerga tashlang!',
-    autoProgress: 'Diskka avtomatik foiz hisobi bilan yuklanadi',
-
-    // Filters & Sorting
-    searchPlaceholder: 'Diskdan fayl va papkalarni qidirish...',
-    searchResult: 'Qidiruv',
-    all: 'Barchasi',
-    images: 'Rasmlar',
-    documents: 'Hujjatlar',
-    videos: 'Videolar',
-    audio: 'Musiqalar',
-    archives: 'Arxivlar',
-    sortBy: "Saralash bo'yicha",
-    sortByDate: "Sana bo'yicha",
-    sortByName: "Nomi bo'yicha",
-    sortBySize: "Hajmi bo'yicha",
-    ascending: "O'sish tartibida",
-    descending: 'Kamayish tartibida',
-    foldersCount: 'papka',
-    filesCount: 'fayl',
-
-    // Table Headers
-    name: 'NOMI',
-    modifiedDate: "O'ZGARTIRILGAN SANA",
-    size: 'HAJMI',
-    actions: 'AMALLAR',
-
-    // Empty States
-    emptyFolder: "Ushbu papka bo'sh",
-    emptyTrash: "Chiqindilar qutisi bo'sh",
-    emptyStarred: 'Tanlangan elementlar mavjud emas',
-    emptyShared: 'Hozircha hech kim siz bilan fayl ulashmagan',
-    emptyDesc: 'Fayllarni yuklash uchun yuqoridagi tugmadan foydalaning yoki sichqoncha bilan tashlang',
-    trashDesc: "O'chirilgan fayllar shu yerda saqlanadi",
-
-    // Modals
-    createFolderTitle: 'Yangi papka ochish',
-    folderNameLabel: 'PAPKA NOMI',
-    folderColorLabel: 'PAPKA RANGI',
-    folderPlaceholder: 'Masalan: Ishchi hujjatlar 2026',
-    shareTitle: 'Dostup berish',
-    addUserLabel: "FOYDALANUVCHILARNI QO'SHISH",
-    emailPlaceholder: 'Email manzilini kiriting...',
-    viewer: "Ko'ruvchi",
-    editor: 'Tahrirlovchi',
-    addUserBtn: "Qo'shish",
-    sharedPeople: 'DOSTUP BERILGANLAR',
-    noOneShared: 'Hozircha hech kimga shaxsiy dostup berilmagan',
-    publicLinkTitle: 'Umumiy havola orqali ulashish',
-    publicLinkEnabled: "Havolaga ega bo'lgan har kim ko'ra oladi",
-    publicLinkDisabled: "Ommaviy dostup o'chiq",
-    turnOn: 'Yoqish',
-    turnOff: 'Yoqilgan',
-    renameTitle: "Nomini o'zgartirish",
-    newNameLabel: 'YANGI NOM',
-
-    // Upload Widget
-    uploadingStatus: 'Yuklanmoqda',
-    uploadCompleted: 'ta fayl muvaffaqiyatli yuklandi',
-    pending: 'Kutilmoqda',
-
-    // Auth
-    loginTitle: 'Safar Diskka kirish',
-    loginSubtitle: 'Google va Yandex Disk muqobili',
-    registerTitle: "Ro'yxatdan o'tish",
-    registerSubtitle: '15 GB bepul bulutli xotira oling',
-    emailLabel: 'EMAIL MANZIL',
-    passwordLabel: 'PAROL',
-    fullNameLabel: 'ISM VA FAMILIYA',
-    signInBtn: 'Tizimga kirish',
-    signUpBtn: "Ro'yxatdan o'tish",
-    demoBtn: '1-Click Demo hisob bilan sinash',
-    noAccount: "Hisobingiz yo'qmi?",
-    haveAccount: 'Allaqachon hisobingiz bormi?',
-    verifyCodeTitle: 'Emailni tasdiqlash',
-    verifyCodeLabel: 'TASDIQLASH KODI',
-    verifyCodePlaceholder: '6 xonali kod',
-    verifyBtn: 'Kodni tasdiqlash va kirish'
+    verifyCodeLabel: 'ВВЕДИТЕ 6-ЗНАЧНЫЙ КОД',
+    verifyCodePlaceholder: '123456',
+    verifyBtn: 'Подтвердить и продолжить'
   }
 };

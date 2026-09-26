@@ -6,7 +6,7 @@ import { AppError } from '../middleware/errorHandler';
 export class FolderService {
   static async create(userId: string, name: string, parentFolder?: string | null, color?: string) {
     if (!name || !name.trim()) {
-      throw new AppError('Papka nomi kiritilishi shart', StatusCodes.BAD_REQUEST);
+      throw new AppError('Folder name is required', StatusCodes.BAD_REQUEST);
     }
 
     let validParentId: mongoose.Types.ObjectId | null = null;
@@ -15,7 +15,7 @@ export class FolderService {
       // STRICT ISOLATION: verify parent folder belongs to this user
       const parent = await Folder.findOne({ _id: parentFolder, owner: userId, isTrash: false });
       if (!parent) {
-        throw new AppError('Asosiy papka topilmadi yoki sizga tegishli emas', StatusCodes.FORBIDDEN);
+        throw new AppError('Parent folder not found or access denied', StatusCodes.FORBIDDEN);
       }
       validParentId = parent._id as mongoose.Types.ObjectId;
     }
@@ -90,7 +90,7 @@ export class FolderService {
 
   static async rename(userId: string, folderId: string, name: string) {
     if (!name || !name.trim()) {
-      throw new AppError('Yangi nom kiritilishi shart', StatusCodes.BAD_REQUEST);
+      throw new AppError('New name is required', StatusCodes.BAD_REQUEST);
     }
 
     // STRICT ISOLATION: owner: userId
@@ -101,7 +101,7 @@ export class FolderService {
     );
 
     if (!folder) {
-      throw new AppError('Papka topilmadi yoki o\'zgartirishga ruxsat yo\'q', StatusCodes.NOT_FOUND);
+      throw new AppError('Folder not found or access denied', StatusCodes.NOT_FOUND);
     }
 
     return folder;
@@ -110,7 +110,7 @@ export class FolderService {
   static async toggleStar(userId: string, folderId: string) {
     const folder = await Folder.findOne({ _id: folderId, owner: userId });
     if (!folder) {
-      throw new AppError('Papka topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Folder not found', StatusCodes.NOT_FOUND);
     }
 
     folder.isStarred = !folder.isStarred;
@@ -126,7 +126,7 @@ export class FolderService {
     );
 
     if (!folder) {
-      throw new AppError('Papka topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Folder not found', StatusCodes.NOT_FOUND);
     }
 
     return folder;
@@ -140,7 +140,7 @@ export class FolderService {
     );
 
     if (!folder) {
-      throw new AppError('Papka topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Folder not found', StatusCodes.NOT_FOUND);
     }
 
     return folder;
@@ -149,7 +149,7 @@ export class FolderService {
   static async deletePermanently(userId: string, folderId: string) {
     const folder = await Folder.findOneAndDelete({ _id: folderId, owner: userId });
     if (!folder) {
-      throw new AppError('Papka topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('Folder not found', StatusCodes.NOT_FOUND);
     }
     return true;
   }

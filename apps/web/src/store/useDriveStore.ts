@@ -27,6 +27,12 @@ interface DriveState {
   viewMode: ViewMode;
   setViewMode: (vm: ViewMode) => void;
 
+  // Multi-selection state ("galochka" checkboxes)
+  selectedIds: string[];
+  toggleSelectItem: (id: string) => void;
+  selectAll: (ids: string[]) => void;
+  clearSelection: () => void;
+
   // Drag & drop state
   isDraggingOver: boolean;
   setIsDraggingOver: (dragging: boolean) => void;
@@ -57,11 +63,11 @@ interface DriveState {
 export const useDriveStore = create<DriveState>((set) => ({
   // Navigation & Filtering
   currentFolderId: null,
-  setCurrentFolderId: (id) => set({ currentFolderId: id }),
+  setCurrentFolderId: (id) => set({ currentFolderId: id, selectedIds: [] }),
   activeSection: 'my-drive',
-  setActiveSection: (sec) => set({ activeSection: sec }),
+  setActiveSection: (sec) => set({ activeSection: sec, currentFolderId: null, selectedIds: [] }),
   filterCategory: 'all',
-  setFilterCategory: (cat) => set({ filterCategory: cat }),
+  setFilterCategory: (cat) => set({ filterCategory: cat, selectedIds: [] }),
   searchQuery: '',
   setSearchQuery: (q) => set({ searchQuery: q }),
   sortBy: 'date',
@@ -70,6 +76,17 @@ export const useDriveStore = create<DriveState>((set) => ({
   setSortOrder: (so) => set({ sortOrder: so }),
   viewMode: 'grid',
   setViewMode: (vm) => set({ viewMode: vm }),
+
+  // Multi-selection
+  selectedIds: [],
+  toggleSelectItem: (id) =>
+    set((state) => ({
+      selectedIds: state.selectedIds.includes(id)
+        ? state.selectedIds.filter((item) => item !== id)
+        : [...state.selectedIds, id]
+    })),
+  selectAll: (ids) => set({ selectedIds: ids }),
+  clearSelection: () => set({ selectedIds: [] }),
 
   // Drag & drop
   isDraggingOver: false,

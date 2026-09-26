@@ -3,23 +3,23 @@ import request from 'supertest';
 import app from '../index';
 
 describe('API Integration tests', () => {
-  it('GET /health - 200 OK qaytarishi kerak', async () => {
+  it('GET /health - should return 200 OK', async () => {
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
-    expect(res.body.service).toContain('Google & Yandex Disk API');
+    expect(res.body.service).toContain('Cloud Disk API');
   });
 
-  it('GET /api/v1/folders (Tokensiz) - 401 Unauthorized qaytarishi kerak', async () => {
+  it('GET /api/v1/folders (without token) - should return 401 Unauthorized', async () => {
     const res = await request(app).get('/api/v1/folders');
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
   });
 
-  it('Mavjud bo\'lmagan API marshrutida 404 qaytarishi kerak', async () => {
-    const res = await request(app).get('/api/v1/mavjud-bolmagan-endpoint');
+  it('Unmatched API route should return 404 Not Found', async () => {
+    const res = await request(app).get('/api/v1/non-existent-endpoint');
     expect(res.status).toBe(404);
     expect(res.body.success).toBe(false);
-    expect(res.body.message).toContain('API marshruti topilmadi');
+    expect(res.body.message).toContain('Route not found');
   });
 });

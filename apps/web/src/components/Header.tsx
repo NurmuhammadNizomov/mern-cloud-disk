@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
+  HardDrive,
   Search,
   LayoutGrid,
   List,
-  HardDrive,
-  LogOut,
-  User as UserIcon,
-  X,
   Sun,
   Moon,
-  Globe
+  Globe,
+  User as UserIcon,
+  LogOut,
+  X
 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -23,188 +23,256 @@ export const Header: React.FC = () => {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close profile dropdown & language dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (profileOpen && profileRef.current && !profileRef.current.contains(target)) {
+        setProfileOpen(false);
+      }
+      if (langDropdownOpen && langRef.current && !langRef.current.contains(target)) {
+        setLangDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileOpen, langDropdownOpen]);
 
   return (
     <header className="main-header">
       {/* Brand logo */}
-      <div className="is-flex is-align-items-center" style={{ gap: '0.75rem', minWidth: '220px' }}>
+      <div className="is-flex is-align-items-center" style={{ gap: '10px', minWidth: '200px' }}>
         <div
           style={{
-            width: '38px',
-            height: '38px',
+            width: '36px',
+            height: '36px',
             borderRadius: '10px',
-            background: 'linear-gradient(135deg, #4285F4 0%, #34A853 50%, #FBBC05 100%)',
+            background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#fff',
-            boxShadow: '0 2px 8px rgba(66, 133, 244, 0.3)'
+            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
           }}
         >
-          <HardDrive size={22} />
+          <HardDrive size={20} />
         </div>
         <div>
-          <span style={{ fontWeight: 700, fontSize: '1.2rem', letterSpacing: '-0.3px' }} className="has-text-dark">
-            Safar <span style={{ color: '#2563eb' }}>Disk</span>
+          <span style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.3px', color: 'var(--text-main)' }}>
+            Cloud <span style={{ color: 'var(--primary)' }}>Disk</span>
           </span>
+        </div>
+      </div>
+
+      {/* Modern Centered Search Bar */}
+      <div className="header-search-wrapper">
+        <span
+          style={{
+            position: 'absolute',
+            left: '14px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            pointerEvents: 'none'
+          }}
+        >
+          <Search size={17} />
+        </span>
+        <input
+          className="header-search-input"
+          type="text"
+          placeholder={t.searchPlaceholder}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
           <span
-            className="tag is-info is-light is-rounded ml-2"
-            style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0 6px', height: '18px' }}
+            style={{
+              position: 'absolute',
+              right: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              display: 'flex',
+              padding: '4px'
+            }}
+            onClick={() => setSearchQuery('')}
           >
-            {t.cloudMern}
+            <X size={15} />
           </span>
-        </div>
+        )}
       </div>
 
-      {/* Search Bar (Google & Yandex Disk style) */}
-      <div style={{ flex: 1, maxWidth: '580px', margin: '0 1.5rem' }}>
-        <div className="field mb-0">
-          <div className="control has-icons-left has-icons-right">
-            <input
-              className="input is-rounded"
-              type="text"
-              placeholder={t.searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                height: '40px',
-                fontSize: '0.875rem'
-              }}
-            />
-            <span className="icon is-small is-left has-text-grey">
-              <Search size={17} />
-            </span>
-            {searchQuery && (
-              <span
-                className="icon is-small is-right"
-                style={{ cursor: 'pointer', pointerEvents: 'all' }}
-                onClick={() => setSearchQuery('')}
-              >
-                <X size={15} />
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Actions: Theme Toggle, Language, View Switcher & Profile */}
-      <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
-        {/* Dark / Light Theme Toggle */}
+      {/* Right Controls: Theme, Language, View mode, User */}
+      <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
+        {/* Dark / Light Toggle */}
         <button
-          className="button is-small is-rounded is-white p-2"
+          type="button"
+          className="header-icon-btn"
           onClick={toggleTheme}
-          title={theme === 'light' ? 'Dark theme' : 'Light theme'}
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
         >
           {theme === 'light' ? (
-            <Moon size={18} className="has-text-grey-dark" />
+            <Moon size={18} />
           ) : (
-            <Sun size={18} className="has-text-warning" />
+            <Sun size={18} style={{ color: '#f59e0b' }} />
           )}
         </button>
 
-        {/* Language Selector (EN, RU, UZ) */}
-        <div className={`dropdown is-right ${langDropdownOpen ? 'is-active' : ''}`}>
+        {/* Language Selector (EN, RU) */}
+        <div ref={langRef} className={`dropdown is-right ${langDropdownOpen ? 'is-active' : ''}`}>
           <div className="dropdown-trigger">
             <button
-              className="button is-small is-rounded is-white"
+              type="button"
+              className="header-icon-btn"
               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              style={{ gap: '0.35rem', fontWeight: 600, textTransform: 'uppercase' }}
+              style={{ width: 'auto', padding: '0 12px', gap: '6px', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}
             >
-              <Globe size={15} className="has-text-info" />
+              <Globe size={15} style={{ color: 'var(--primary)' }} />
               <span>{language}</span>
             </button>
           </div>
           <div className="dropdown-menu" role="menu">
-            <div className="dropdown-content p-1" style={{ borderRadius: '10px' }}>
-              {(['en', 'ru', 'uz'] as Language[]).map((lang) => (
+            <div className="dropdown-content">
+              {(['en', 'ru'] as Language[]).map((lang) => (
                 <a
                   key={lang}
-                  className={`dropdown-item py-1 ${language === lang ? 'has-text-info has-text-weight-bold' : ''}`}
+                  className={`dropdown-item ${language === lang ? 'is-active' : ''}`}
                   onClick={() => {
                     setLanguage(lang);
                     setLangDropdownOpen(false);
                   }}
-                  style={{ fontSize: '0.825rem' }}
+                  style={{ fontWeight: language === lang ? 600 : 400 }}
                 >
-                  {lang === 'en' ? '🇬🇧 English' : lang === 'ru' ? '🇷🇺 Русский' : "🇺🇿 O'zbekcha"}
+                  {lang === 'en' ? '🇬🇧 English' : '🇷🇺 Русский'}
                 </a>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Grid/List switch */}
-        <div className="buttons has-addons mb-0">
+        {/* Grid/List Segmented Switcher */}
+        <div
+          style={{
+            display: 'flex',
+            background: 'var(--bg-subtle)',
+            borderRadius: '10px',
+            padding: '3px',
+            border: '1px solid var(--border)'
+          }}
+        >
           <button
-            className={`button is-small ${viewMode === 'grid' ? 'is-info is-selected' : 'is-white'}`}
+            type="button"
             onClick={() => setViewMode('grid')}
-            style={{ borderRadius: '8px 0 0 8px' }}
+            style={{
+              border: 'none',
+              background: viewMode === 'grid' ? 'var(--bg-surface)' : 'transparent',
+              color: viewMode === 'grid' ? 'var(--primary)' : 'var(--text-muted)',
+              boxShadow: viewMode === 'grid' ? 'var(--shadow-xs)' : 'none',
+              borderRadius: '7px',
+              width: '32px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
           >
-            <LayoutGrid size={16} />
+            <LayoutGrid size={15} />
           </button>
           <button
-            className={`button is-small ${viewMode === 'list' ? 'is-info is-selected' : 'is-white'}`}
+            type="button"
             onClick={() => setViewMode('list')}
-            style={{ borderRadius: '0 8px 8px 0' }}
+            style={{
+              border: 'none',
+              background: viewMode === 'list' ? 'var(--bg-surface)' : 'transparent',
+              color: viewMode === 'list' ? 'var(--primary)' : 'var(--text-muted)',
+              boxShadow: viewMode === 'list' ? 'var(--shadow-xs)' : 'none',
+              borderRadius: '7px',
+              width: '32px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
           >
-            <List size={16} />
+            <List size={15} />
           </button>
         </div>
 
         {/* User Profile dropdown */}
-        <div className={`dropdown is-right ${profileOpen ? 'is-active' : ''}`}>
+        <div ref={profileRef} className={`dropdown is-right ${profileOpen ? 'is-active' : ''}`}>
           <div className="dropdown-trigger">
             <button
-              className="button is-rounded is-white p-1"
+              type="button"
               aria-haspopup="true"
               onClick={() => setProfileOpen(!profileOpen)}
-              style={{ border: '2px solid var(--border-color)', width: '38px', height: '38px' }}
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                border: '2px solid var(--border)',
+                background: 'var(--primary)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                boxShadow: 'var(--shadow-xs)',
+                transition: 'all 0.15s ease'
+              }}
             >
-              <div
-                style={{
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  background: '#2563eb',
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 600,
-                  fontSize: '0.85rem'
-                }}
-              >
-                {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={16} />}
-              </div>
+              {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={16} />}
             </button>
           </div>
           <div className="dropdown-menu" role="menu" style={{ minWidth: '240px' }}>
-            <div className="dropdown-content p-3" style={{ borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
-              <div className="mb-2">
-                <p className="has-text-weight-bold has-text-dark mb-0">{user?.name}</p>
-                <p className="is-size-7 has-text-grey">{user?.email}</p>
-              </div>
-              <hr className="dropdown-divider my-2" />
+            <div className="dropdown-content" style={{ padding: '14px' }}>
               <div className="mb-3">
-                <div className="is-flex is-justify-content-space-between is-size-7 has-text-grey mb-1">
-                  <span>{t.cloudStorage}:</span>
-                  <span>{((user?.storageUsed || 0) / (1024 * 1024)).toFixed(1)} MB / 15 GB</span>
-                </div>
-                <progress
-                  className="progress is-info is-small mb-0"
-                  value={((user?.storageUsed || 0) / (user?.storageLimit || 15 * 1024 * 1024 * 1024)) * 100}
-                  max="100"
-                />
+                <p className="has-text-weight-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                  {user?.name}
+                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{user?.email}</p>
               </div>
-              <hr className="dropdown-divider my-2" />
+              <hr className="dropdown-divider" />
+              <div className="my-3">
+                <div className="is-flex is-justify-content-space-between mb-1" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>{t.cloudStorage}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                    {((user?.storageUsed || 0) / (1024 * 1024)).toFixed(1)} MB / 15 GB
+                  </span>
+                </div>
+                <div style={{ width: '100%', height: '5px', borderRadius: '9999px', background: 'var(--border)', overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      height: '100%',
+                      width: `${Math.min(100, Math.max(1, ((user?.storageUsed || 0) / (user?.storageLimit || 15 * 1024 * 1024 * 1024)) * 100))}%`,
+                      background: 'var(--primary)',
+                      borderRadius: '9999px'
+                    }}
+                  />
+                </div>
+              </div>
+              <hr className="dropdown-divider" />
               <button
-                className="button is-danger is-light is-small is-fullwidth"
+                type="button"
+                className="button is-danger is-light is-small is-fullwidth mt-2"
                 onClick={() => {
                   setProfileOpen(false);
                   logout();
                 }}
+                style={{ borderRadius: '8px', fontWeight: 600 }}
               >
-                <LogOut size={15} className="mr-2" />
+                <LogOut size={14} className="mr-2" />
                 {t.logout}
               </button>
             </div>

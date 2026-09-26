@@ -8,7 +8,7 @@ export const uploadFiles = async (req: AuthRequest, res: Response): Promise<void
   const rawFiles: Express.Multer.File[] = (req.files as Express.Multer.File[]) || (req.file ? [req.file] : []);
   const { folderId } = req.body;
   const result = await FileService.uploadFiles(req.user!.id, rawFiles, folderId);
-  sendSuccess(res, StatusCodes.CREATED, `${result.files.length} ta fayl muvaffaqiyatli yuklandi`, result);
+  sendSuccess(res, StatusCodes.CREATED, `${result.files.length} file(s) uploaded successfully`, result);
 };
 
 export const getFiles = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -22,14 +22,14 @@ export const getFiles = async (req: AuthRequest, res: Response): Promise<void> =
     sortBy: sortBy as string,
     sortOrder: sortOrder as string
   });
-  sendSuccess(res, StatusCodes.OK, 'Fayllar ro\'yxati', { files });
+  sendSuccess(res, StatusCodes.OK, 'Files retrieved successfully', { files });
 };
 
 export const renameFile = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { name } = req.body;
   const file = await FileService.rename(req.user!.id, id, name);
-  sendSuccess(res, StatusCodes.OK, 'Fayl nomi o\'zgartirildi', { file });
+  sendSuccess(res, StatusCodes.OK, 'File renamed successfully', { file });
 };
 
 export const toggleStarFile = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -38,7 +38,7 @@ export const toggleStarFile = async (req: AuthRequest, res: Response): Promise<v
   sendSuccess(
     res,
     StatusCodes.OK,
-    file.isStarred ? 'Tanlanganlarga qo\'shildi' : 'Tanlanganlardan olib tashlandi',
+    file.isStarred ? 'Added to starred' : 'Removed from starred',
     { file }
   );
 };
@@ -46,17 +46,17 @@ export const toggleStarFile = async (req: AuthRequest, res: Response): Promise<v
 export const trashFile = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const file = await FileService.trash(req.user!.id, id);
-  sendSuccess(res, StatusCodes.OK, 'Fayl chiqindilar qutisiga o\'tkazildi', { file });
+  sendSuccess(res, StatusCodes.OK, 'File moved to trash', { file });
 };
 
 export const restoreFile = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const file = await FileService.restore(req.user!.id, id);
-  sendSuccess(res, StatusCodes.OK, 'Fayl qayta tiklandi', { file });
+  sendSuccess(res, StatusCodes.OK, 'File restored successfully', { file });
 };
 
 export const deleteFilePermanently = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   await FileService.deletePermanently(req.user!.id, id);
-  sendSuccess(res, StatusCodes.OK, 'Fayl butunlay o\'chirildi');
+  sendSuccess(res, StatusCodes.OK, 'File deleted permanently');
 };

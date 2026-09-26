@@ -26,7 +26,7 @@ export class CloudinaryService {
         },
         (error, result) => {
           if (error || !result) {
-            return reject(error || new Error('Cloudinary yuklash muvaffaqiyatsiz bo\'ldi'));
+            return reject(error || new Error('Cloudinary upload failed'));
           }
           resolve({
             secure_url: result.secure_url,

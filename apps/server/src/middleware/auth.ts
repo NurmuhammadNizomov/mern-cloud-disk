@@ -13,7 +13,7 @@ export interface AuthRequest extends Request {
 export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new AppError('Avtorizatsiyadan o\'tilmagan: Token topilmadi', StatusCodes.UNAUTHORIZED);
+    throw new AppError('Unauthorized: Token not provided', StatusCodes.UNAUTHORIZED);
   }
 
   const token = authHeader.split(' ')[1];
@@ -22,7 +22,7 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
     req.user = decoded;
     next();
   } catch (error) {
-    throw new AppError('Yaroqsiz yoki muddati o\'tgan token', StatusCodes.UNAUTHORIZED);
+    throw new AppError('Invalid or expired token', StatusCodes.UNAUTHORIZED);
   }
 };
 

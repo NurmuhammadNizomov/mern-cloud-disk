@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Edit2 } from 'lucide-react';
 import { useDriveStore } from '../store/useDriveStore';
 import { useDriveOperations } from '../hooks/useDriveOperations';
+import { useSettingsStore } from '../store/useSettingsStore';
 
 export const RenameModal: React.FC = () => {
   const { renameModalItem, setRenameModalItem } = useDriveStore();
   const { renameFolder, renameFile } = useDriveOperations();
+  const { t } = useSettingsStore();
 
   const [newName, setNewName] = useState(renameModalItem?.currentName || '');
   const [submitting, setSubmitting] = useState(false);
@@ -33,20 +35,20 @@ export const RenameModal: React.FC = () => {
 
   return (
     <div className="modal is-active">
-      <div className="modal-background" onClick={() => setRenameModalItem(null)} />
+      <div className="modal-background" onClick={() => setRenameModalItem(null)} style={{ backdropFilter: 'blur(4px)' }} />
       <div className="modal-card" style={{ maxWidth: '420px' }}>
-        <header className="modal-card-head" style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-          <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-            <Edit2 size={18} className="has-text-info" />
-            <p className="modal-card-title is-size-5 has-text-weight-bold mb-0">Nomini o'zgartirish</p>
+        <header className="modal-card-head">
+          <div className="is-flex is-align-items-center" style={{ gap: '10px' }}>
+            <Edit2 size={18} style={{ color: 'var(--primary)' }} />
+            <p className="modal-card-title">{t.renameTitle}</p>
           </div>
-          <button className="delete" aria-label="close" onClick={() => setRenameModalItem(null)} />
+          <button type="button" className="delete" aria-label="close" onClick={() => setRenameModalItem(null)} />
         </header>
 
         <form onSubmit={handleSubmit}>
-          <section className="modal-card-body" style={{ backgroundColor: '#ffffff' }}>
+          <section className="modal-card-body">
             <div className="field">
-              <label className="label is-size-7 has-text-grey">YANGI NOM</label>
+              <label className="label">{t.newNameLabel}</label>
               <div className="control">
                 <input
                   className="input"
@@ -55,28 +57,27 @@ export const RenameModal: React.FC = () => {
                   onChange={(e) => setNewName(e.target.value)}
                   autoFocus
                   required
-                  style={{ borderRadius: '8px' }}
                 />
               </div>
             </div>
           </section>
 
-          <footer className="modal-card-foot is-justify-content-flex-end" style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+          <footer className="modal-card-foot is-justify-content-flex-end">
             <button
               type="button"
               className="button is-light mr-2"
               onClick={() => setRenameModalItem(null)}
               style={{ borderRadius: '8px' }}
             >
-              Bekor qilish
+              {t.cancel}
             </button>
             <button
               type="submit"
-              className={`button is-info ${submitting ? 'is-loading' : ''}`}
+              className={`button is-primary ${submitting ? 'is-loading' : ''}`}
               disabled={!newName.trim() || submitting}
               style={{ borderRadius: '8px', fontWeight: 600 }}
             >
-              Saqlash
+              {t.save}
             </button>
           </footer>
         </form>

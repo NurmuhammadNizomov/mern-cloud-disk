@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import dayjs from 'dayjs';
 import { StatusCodes } from 'http-status-codes';
 import { User, IUser } from '../models/User';
 import {
@@ -14,14 +15,14 @@ export class AuthService {
     const cleanEmail = email.toLowerCase().trim();
     const existing = await User.findOne({ email: cleanEmail });
     if (existing) {
-      throw new AppError('Ushbu email bilan foydalanuvchi allaqachon ro\'yxatdan o\'tgan', StatusCodes.CONFLICT);
+      throw new AppError('An account with this email already exists', StatusCodes.CONFLICT);
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const verificationCode = EmailService.generateCode();
-    const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+    const verificationCodeExpires = dayjs().add(15, 'minute').toDate();
 
     const newUser = await User.create({
       name: name.trim(),
@@ -64,19 +65,19 @@ export class AuthService {
     const user = await User.findOne({ email: cleanEmail });
 
     if (!user) {
-      throw new AppError('Foydalanuvchi topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('User not found', StatusCodes.NOT_FOUND);
     }
 
     if (user.isEmailVerified) {
-      return { message: 'Email allaqachon tasdiqlangan', isEmailVerified: true };
+      return { message: 'Email is already verified', isEmailVerified: true };
     }
 
     if (!user.verificationCode || user.verificationCode !== code.trim()) {
-      throw new AppError('Tasdiqlash kodi noto\'g\'ri', StatusCodes.BAD_REQUEST);
+      throw new AppError('Invalid verification code', StatusCodes.BAD_REQUEST);
     }
 
-    if (user.verificationCodeExpires && user.verificationCodeExpires < new Date()) {
-      throw new AppError('Tasdiqlash kodining muddati o\'tgan. Yangi kod so\'rang', StatusCodes.BAD_REQUEST);
+    if (user.verificationCodeExpires && dayjs().isAfter(dayjs(user.verificationCodeExpires))) {
+      throw new AppError('Verification code has expired. Please request a new code', StatusCodes.BAD_REQUEST);
     }
 
     user.isEmailVerified = true;
@@ -84,7 +85,7 @@ export class AuthService {
     user.verificationCodeExpires = undefined;
     await user.save();
 
-    return { message: 'Email muvaffaqiyatli tasdiqlandi', isEmailVerified: true };
+    return { message: 'Email verified successfully', isEmailVerified: true };
   }
 
   static async resendVerificationCode(email: string) {
@@ -92,32 +93,32 @@ export class AuthService {
     const user = await User.findOne({ email: cleanEmail });
 
     if (!user) {
-      throw new AppError('Foydalanuvchi topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('User not found', StatusCodes.NOT_FOUND);
     }
 
     if (user.isEmailVerified) {
-      throw new AppError('Email allaqachon tasdiqlangan', StatusCodes.BAD_REQUEST);
+      throw new AppError('Email is already verified', StatusCodes.BAD_REQUEST);
     }
 
     const code = EmailService.generateCode();
     user.verificationCode = code;
-    user.verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000);
+    user.verificationCodeExpires = dayjs().add(15, 'minute').toDate();
     await user.save();
 
     await EmailService.sendVerificationEmail(user.email, code, user.name);
-    return { message: 'Yangi tasdiqlash kodi yuborildi' };
+    return { message: 'A new verification code has been sent' };
   }
 
   static async login(email: string, password: string) {
     const cleanEmail = email.toLowerCase().trim();
     const user = await User.findOne({ email: cleanEmail });
     if (!user) {
-      throw new AppError('Email yoki parol noto\'g\'ri', StatusCodes.UNAUTHORIZED);
+      throw new AppError('Invalid email or password', StatusCodes.UNAUTHORIZED);
     }
 
     const isMatch = await bcrypt.compare(password, user.password || '');
     if (!isMatch) {
-      throw new AppError('Email yoki parol noto\'g\'ri', StatusCodes.UNAUTHORIZED);
+      throw new AppError('Invalid email or password', StatusCodes.UNAUTHORIZED);
     }
 
     const accessToken = generateAccessToken(user._id.toString(), user.email);
@@ -145,19 +146,19 @@ export class AuthService {
 
   static async refreshTokens(token: string) {
     if (!token) {
-      throw new AppError('Refresh token ko\'rsatilmadi', StatusCodes.BAD_REQUEST);
+      throw new AppError('Refresh token is required', StatusCodes.BAD_REQUEST);
     }
 
     let payload;
     try {
       payload = verifyRefreshToken(token);
     } catch {
-      throw new AppError('Yaroqsiz yoki muddati o\'tgan refresh token', StatusCodes.UNAUTHORIZED);
+      throw new AppError('Invalid or expired refresh token', StatusCodes.UNAUTHORIZED);
     }
 
     const user = await User.findById(payload.id);
     if (!user || !user.refreshTokens.includes(token)) {
-      throw new AppError('Refresh token bazada topilmadi yoki bekor qilingan', StatusCodes.UNAUTHORIZED);
+      throw new AppError('Refresh token not found or revoked', StatusCodes.UNAUTHORIZED);
     }
 
     // Token rotation: remove old token and add new token
@@ -188,27 +189,27 @@ export class AuthService {
     const user = await User.findOne({ email: cleanEmail });
     if (!user) {
       // Don't disclose user existence for security
-      return { message: 'Agar ushbu email ro\'yxatdan o\'tgan bo\'lsa, tasdiq kodi yuborildi' };
+      return { message: 'If an account exists with this email, a reset code has been sent' };
     }
 
     const code = EmailService.generateCode();
     user.resetPasswordCode = code;
-    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+    user.resetPasswordExpires = dayjs().add(15, 'minute').toDate();
     await user.save();
 
     await EmailService.sendResetPasswordEmail(user.email, code);
-    return { message: 'Parolni tiklash kodi emailingizga yuborildi' };
+    return { message: 'Password reset code has been sent to your email' };
   }
 
   static async resetPassword(email: string, code: string, newPassword: string) {
     const cleanEmail = email.toLowerCase().trim();
     const user = await User.findOne({ email: cleanEmail });
     if (!user || !user.resetPasswordCode || user.resetPasswordCode !== code.trim()) {
-      throw new AppError('Noto\'g\'ri tasdiqlash kodi', StatusCodes.BAD_REQUEST);
+      throw new AppError('Invalid verification code', StatusCodes.BAD_REQUEST);
     }
 
-    if (user.resetPasswordExpires && user.resetPasswordExpires < new Date()) {
-      throw new AppError('Tasdiqlash kodining muddati o\'tgan', StatusCodes.BAD_REQUEST);
+    if (user.resetPasswordExpires && dayjs().isAfter(dayjs(user.resetPasswordExpires))) {
+      throw new AppError('Verification code has expired', StatusCodes.BAD_REQUEST);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -218,13 +219,13 @@ export class AuthService {
     user.refreshTokens = []; // Log out from all devices
     await user.save();
 
-    return { message: 'Parol muvaffaqiyatli yangilandi. Yangi parol bilan tizimga kiring' };
+    return { message: 'Password updated successfully. Please log in with your new password' };
   }
 
   static async getProfile(userId: string) {
     const user = await User.findById(userId).select('-password');
     if (!user) {
-      throw new AppError('Foydalanuvchi topilmadi', StatusCodes.NOT_FOUND);
+      throw new AppError('User not found', StatusCodes.NOT_FOUND);
     }
     return {
       id: user._id,

@@ -1,6 +1,7 @@
 import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -23,6 +24,7 @@ const PORT = process.env.PORT || 5050;
 connectDB();
 
 // Middleware
+app.use(compression());
 app.use(cors({
   origin: '*',
   credentials: true
@@ -37,7 +39,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     version: '1.0.0',
     time: new Date().toISOString(),
-    service: 'Google & Yandex Disk API (MERN)'
+    service: 'MERN Cloud Disk API'
   });
 });
 
@@ -56,7 +58,7 @@ app.use('/api/share', shareRoutes);
 // API 404 Handler for unmatched API endpoints
 app.all(['/api', '/api/*'], (req, res) => {
   throw new AppError(
-    `API marshruti topilmadi: [${req.method}] ${req.originalUrl}. Iltimos, /api/v1/... formatidan foydalaning`,
+    `Route not found: [${req.method}] ${req.originalUrl}. Please use /api/v1/... format`,
     StatusCodes.NOT_FOUND
   );
 });
@@ -92,9 +94,11 @@ if (clientDistPath) {
 // Global error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  logger.info(`🚀 [Disk Server] Server http://localhost:${PORT} portida muvaffaqiyatli ishga tushdi`);
-  logger.info(`📚 [API Endpoints] /api/v1/auth, /api/v1/folders, /api/v1/files, /api/v1/share`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`🚀 [Disk Server] Server started successfully on http://localhost:${PORT}`);
+    logger.info(`📚 [API Endpoints] /api/v1/auth, /api/v1/folders, /api/v1/files, /api/v1/share`);
+  });
+}
 
 export default app;
