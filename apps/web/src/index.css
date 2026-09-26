@@ -1,0 +1,261 @@
+@import 'bulma/css/bulma.min.css';
+
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-color: #f8fafc;
+  --sidebar-bg: #ffffff;
+  --header-bg: #ffffff;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-color: #0b0f19;
+  --sidebar-bg: #111827;
+  --header-bg: #111827;
+  --card-bg: #1f2937;
+  --border-color: #374151;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-sidebar {
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 1.25rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+.main-header {
+  height: 64px;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.main-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  position: relative;
+}
+
+/* Disk Cards & Grid */
+.drive-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  cursor: pointer;
+  user-select: none;
+}
+.drive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  border-color: #cbd5e1;
+}
+
+.folder-card {
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-card-preview {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
+  overflow: hidden;
+  position: relative;
+}
+
+[data-theme="dark"] .file-card-preview {
+  background: #111827;
+}
+
+.file-card-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] .input,
+[data-theme="dark"] .select select {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+[data-theme="dark"] .modal-card-head,
+[data-theme="dark"] .modal-card-body,
+[data-theme="dark"] .modal-card-foot,
+[data-theme="dark"] .card {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+[data-theme="dark"] .table {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+[data-theme="dark"] .table tr:hover {
+  background-color: #374151 !important;
+}
+[data-theme="dark"] .table thead tr {
+  background-color: #111827 !important;
+}
+
+[data-theme="dark"] .dropdown-content {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+[data-theme="dark"] .dropdown-item {
+  color: #f9fafb !important;
+}
+[data-theme="dark"] .dropdown-item:hover {
+  background-color: #374151 !important;
+}
+
+[data-theme="dark"] .has-text-dark {
+  color: #f9fafb !important;
+}
+
+/* Dropzone drag overlay */
+.drag-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(37, 99, 235, 0.15);
+  backdrop-filter: blur(4px);
+  border: 3px dashed #2563eb;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #1e40af;
+  pointer-events: none;
+}
+
+/* Floating upload progress widget */
+.upload-floating-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 380px;
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.upload-header {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.upload-body {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+.upload-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.825rem;
+}
+
+/* Badges and tags */
+.category-pill {
+  border-radius: 9999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-muted);
+}
+.category-pill.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
