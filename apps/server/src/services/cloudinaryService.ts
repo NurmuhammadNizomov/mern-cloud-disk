@@ -11,16 +11,32 @@ export interface CloudinaryUploadResult {
 }
 
 export class CloudinaryService {
+  static getBaseFolder(): string {
+    const folder = process.env.CLOUDINARY_FOLDER?.trim();
+    return folder ? folder.replace(/^\/+|\/+$/g, '') : 'mern-cloud-disk';
+  }
+
   static uploadBuffer(
     buffer: Buffer,
-    folderName: string = 'mern-cloud-disk',
+    folderName?: string,
     fileName: string = 'file'
   ): Promise<CloudinaryUploadResult> {
     return new Promise((resolve, reject) => {
       const safeName = sanitizeFileName(fileName);
+      const baseFolder = CloudinaryService.getBaseFolder();
+      
+      let targetFolder = baseFolder;
+      if (folderName && folderName.trim()) {
+        const cleanSubFolder = folderName.trim().replace(/^\/+|\/+$/g, '');
+        // If folderName already includes baseFolder, don't duplicate
+        targetFolder = cleanSubFolder.startsWith(baseFolder) 
+          ? cleanSubFolder 
+          : `${baseFolder}/${cleanSubFolder}`;
+      }
+
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: folderName,
+          folder: targetFolder,
           resource_type: 'auto',
           public_id: `${Date.now()}-${safeName}`
         },

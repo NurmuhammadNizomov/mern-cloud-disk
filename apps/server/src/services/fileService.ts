@@ -48,10 +48,10 @@ export class FileService {
       const ext = path.extname(file.originalname).replace('.', '').toLowerCase();
       const category = getCategoryFromMimeAndExt(file.mimetype, ext);
 
-      // STRICT ISOLATION: User-specific Cloudinary namespace
+      // STRICT ISOLATION: User-specific Cloudinary namespace under configured folder
       const cld = await CloudinaryService.uploadBuffer(
         file.buffer,
-        `mern-cloud-disk/${userId}`,
+        userId.toString(),
         file.originalname
       );
 

@@ -21,13 +21,20 @@ export interface CloudinaryUploadResult {
 
 export const uploadBufferToCloudinary = (
   buffer: Buffer,
-  folderName: string = 'mern-cloud-disk',
+  folderName?: string,
   fileName: string = 'file'
 ): Promise<CloudinaryUploadResult> => {
   return new Promise((resolve, reject) => {
+    const baseFolder = process.env.CLOUDINARY_FOLDER?.trim().replace(/^\/+|\/+$/g, '') || 'mern-cloud-disk';
+    let targetFolder = baseFolder;
+    if (folderName && folderName.trim()) {
+      const cleanSub = folderName.trim().replace(/^\/+|\/+$/g, '');
+      targetFolder = cleanSub.startsWith(baseFolder) ? cleanSub : `${baseFolder}/${cleanSub}`;
+    }
+
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: folderName,
+        folder: targetFolder,
         resource_type: 'auto',
         public_id: `${Date.now()}-${fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '_')}`
       },
